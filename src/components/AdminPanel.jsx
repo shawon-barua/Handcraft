@@ -1175,7 +1175,7 @@ export default function AdminPanel({
         {showAddProductModal && (
           <div className="modal-overlay" onClick={() => setShowAddProductModal(false)}>
             <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ padding: '1.75rem', maxWidth: '650px' }}>
-              <h2 style={{ fontSize: '1.3rem', color: '#fef3c7', marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.3rem', color: '#1c1917', fontWeight: 700, marginBottom: '1.25rem' }}>
                 Add New Handcrafted Item
               </h2>
               <form onSubmit={handleCreateProduct}>
@@ -1328,7 +1328,7 @@ export default function AdminPanel({
         {showEditProductModal && editingProduct && (
           <div className="modal-overlay" onClick={() => setShowEditProductModal(false)}>
             <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ padding: '1.75rem', maxWidth: '650px' }}>
-              <h2 style={{ fontSize: '1.3rem', color: '#fef3c7', marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.3rem', color: '#1c1917', fontWeight: 700, marginBottom: '1.25rem' }}>
                 Edit Handcrafted Item (#{editingProduct.id})
               </h2>
               <form onSubmit={handleUpdateProduct}>
