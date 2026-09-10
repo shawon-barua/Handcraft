@@ -499,7 +499,7 @@ export default function AdminPanel({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {filteredOrders.map(order => {
                   const customerWhatsApp = order.customer?.phone?.replace(/[^0-9]/g, '');
-                  const waChatUrl = `https://wa.me/${customerWhatsApp}?text=${encodeURIComponent(`Salam ${order.customer?.name}! This is KaruKala Artisans regarding your order #${order.id}.`)}`;
+                  const waChatUrl = `https://wa.me/${customerWhatsApp}?text=${encodeURIComponent(`Salam ${order.customer?.name}! This is ${settings?.storeName || 'Falguni Handcraft'} regarding your order #${order.id}.`)}`;
 
                   return (
                     <div

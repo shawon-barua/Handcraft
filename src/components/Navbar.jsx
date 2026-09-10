@@ -63,30 +63,30 @@ export default function Navbar({
           {/* Logo & Tagline */}
           <div 
             onClick={() => setIsAdminMode(false)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', cursor: 'pointer' }}
           >
-            {/* Aarong-style bold orange emblem */}
             <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #e26d21 0%, #ef8022 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(226, 109, 33, 0.3)'
+              width: '46px',
+              height: '46px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              boxShadow: '0 3px 10px rgba(226, 109, 33, 0.22)',
+              border: '1.5px solid #fed7aa',
+              flexShrink: 0,
+              background: '#fff'
             }}>
-              <Sparkles size={20} color="#fff" />
+              <img
+                src={settings?.logo || "/logo.png"}
+                alt={settings?.storeName || "Falguni Handcraft"}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+              />
             </div>
             <div>
-              <h1 style={{ fontSize: '1.65rem', lineHeight: 1.1, color: '#1c1917', display: 'flex', alignItems: 'center', gap: '0.45rem', letterSpacing: '-0.01em' }}>
-                {settings?.storeName || 'KaruKala'}
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#e26d21', background: '#fff7ed', border: '1px solid #fed7aa', padding: '0.1rem 0.45rem', borderRadius: '4px', textTransform: 'uppercase' }}>
-                  Artisans
-                </span>
+              <h1 style={{ fontSize: '1.65rem', lineHeight: 1.1, color: '#1c1917', display: 'flex', alignItems: 'center', gap: '0.45rem', letterSpacing: '-0.01em', margin: 0 }}>
+                {settings?.storeName || 'Falguni Handcraft'}
               </h1>
-              <span style={{ fontSize: '0.72rem', color: '#78716c', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500 }}>
-                Handcrafted Jewelry & Heritage Collective
+              <span style={{ fontSize: '0.72rem', color: '#78716c', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 500, display: 'block', marginTop: '2px' }}>
+                Aesthetic Bead, Thread & Clay Jewellery
               </span>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function Navbar({
               <Search size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#a8a29e' }} />
               <input
                 type="text"
-                placeholder="Search terracotta, silk thread, men's cuffs, payals..."
+                placeholder="Search Haldi sets, bracelets, anklets, clay & bead designs..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 style={{

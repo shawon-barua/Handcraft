@@ -15,11 +15,12 @@ export default function App() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState({
-    storeName: 'KaruKala Artisans',
+    storeName: 'Falguni Handcraft',
+    logo: '/logo.png',
     whatsappNumber: '8801712345678',
-    email: 'karukala.artisan@gmail.com',
+    email: 'falgunihandcraft@gmail.com',
     currency: '৳',
-    announcement: '✨ Handcrafted with passion: Free custom sizing & color matching! Direct WhatsApp negotiation available.'
+    announcement: '✨ Exquisitely handcrafted: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order.'
   });
 
   const [activeCategory, setActiveCategory] = useState('all');
@@ -29,7 +30,7 @@ export default function App() {
   // Cart & Wishlist state
   const [cart, setCart] = useState(() => {
     try {
-      const saved = localStorage.getItem('karukala_cart');
+      const saved = localStorage.getItem('falguni_cart') || localStorage.getItem('karukala_cart');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -38,7 +39,7 @@ export default function App() {
 
   const [wishlist, setWishlist] = useState(() => {
     try {
-      const saved = localStorage.getItem('karukala_wishlist');
+      const saved = localStorage.getItem('falguni_wishlist') || localStorage.getItem('karukala_wishlist');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -57,7 +58,7 @@ export default function App() {
   // Persist cart
   useEffect(() => {
     try {
-      localStorage.setItem('karukala_cart', JSON.stringify(cart));
+      localStorage.setItem('falguni_cart', JSON.stringify(cart));
     } catch (e) {
       console.error(e);
     }
@@ -66,7 +67,7 @@ export default function App() {
   // Persist wishlist
   useEffect(() => {
     try {
-      localStorage.setItem('karukala_wishlist', JSON.stringify(wishlist));
+      localStorage.setItem('falguni_wishlist', JSON.stringify(wishlist));
     } catch (e) {
       console.error(e);
     }
@@ -394,7 +395,7 @@ export default function App() {
 
       {/* Floating WhatsApp Button (Bottom Right) */}
       <a
-        href={`https://wa.me/${settings?.whatsappNumber || '8801712345678'}?text=${encodeURIComponent("Salam KaruKala! I'm browsing your handcrafted jewelry store and would like to ask a question.")}`}
+        href={`https://wa.me/${settings?.whatsappNumber || '8801712345678'}?text=${encodeURIComponent("Salam Falguni Handcraft! I'm browsing your handcrafted jewelry store and would like to ask a question.")}`}
         target="_blank"
         rel="noopener noreferrer"
         className="floating-whatsapp"
@@ -421,16 +422,29 @@ export default function App() {
           }}>
             {/* Brand */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.6rem' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#e26d21', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Sparkles size={16} color="#ffffff" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                  border: '1.5px solid #fed7aa',
+                  flexShrink: 0,
+                  background: '#fff'
+                }}>
+                  <img
+                    src={settings?.logo || "/logo.png"}
+                    alt={settings?.storeName || "Falguni Handcraft"}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                  />
                 </div>
                 <h3 style={{ fontSize: '1.4rem', color: '#ffffff', margin: 0 }}>
-                  {settings?.storeName || 'KaruKala Artisans'}
+                  {settings?.storeName || 'Falguni Handcraft'}
                 </h3>
               </div>
               <p style={{ fontSize: '0.85rem', color: '#a8a29e', lineHeight: 1.6, marginBottom: '1rem' }}>
-                Empowering cottage jewelry makers and handcrafted entrepreneurs with multi-angle photo showcase and conversational WhatsApp commerce.
+                Exquisitely handcrafted aesthetic seed bead, thread, and clay designs. Custom Haldi sets, stylish bracelets, and anklets made to match your special occasions.
               </p>
               <div style={{ fontSize: '0.85rem', color: '#fed7aa', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <Phone size={14} color="#25d366" /> WhatsApp: +{settings?.whatsappNumber || '8801712345678'}
@@ -491,8 +505,8 @@ export default function App() {
             flexWrap: 'wrap',
             gap: '1rem'
           }}>
-            <div>© {new Date().getFullYear()} {settings?.storeName || 'KaruKala Artisans'}. All rights reserved.</div>
-            <div>Aarong-Inspired Handcrafted Commerce with Multi-Angle Photo Gallery & WhatsApp Ordering</div>
+            <div>© {new Date().getFullYear()} {settings?.storeName || 'Falguni Handcraft'}. All rights reserved.</div>
+            <div>Exquisite Handcrafted Jewellery with Customized Colors & Designs</div>
           </div>
         </div>
       </footer>

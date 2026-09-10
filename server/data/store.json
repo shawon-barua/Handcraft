@@ -1,11 +1,12 @@
 {
   "settings": {
-    "storeName": "KaruKala Artisans",
-    "tagline": "Authentic Handcrafted Jewelry & Heritage Crafts",
+    "storeName": "Falguni Handcraft",
+    "logo": "/logo.png",
+    "tagline": "Handcrafted jewellery woven with traditional & elegance",
     "whatsappNumber": "8801712345678",
-    "email": "karukala.artisan@gmail.com",
+    "email": "falgunihandcraft@gmail.com",
     "currency": "৳",
-    "announcement": "✨ Handcrafted with passion: Free custom sizing & color matching on all clay and thread orders! Direct WhatsApp negotiation available."
+    "announcement": "✨ Handcrafted with love: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order in your favorite colors and designs."
   },
   "categories": [
     {

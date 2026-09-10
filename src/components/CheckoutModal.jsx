@@ -73,11 +73,11 @@ export default function CheckoutModal({
         .join('\n');
 
       const ownerWhatsApp = settings?.whatsappNumber || '8801712345678';
-      const ownerEmail = settings?.email || 'karukala.artisan@gmail.com';
+      const ownerEmail = settings?.email || 'falgunihandcraft@gmail.com';
 
       if (channel === 'whatsapp') {
         const waMessage = 
-`✨ *NEW HANDCRAFTED ORDER & NEGOTIATION* ✨
+`✨ *NEW HANDCRAFTED ORDER & INQUIRY* ✨
 🔖 *Order Ref:* #${order.id}
 👤 *Customer:* ${formData.name}
 📱 *Phone:* ${formData.phone}
@@ -89,7 +89,7 @@ ${itemsListText}
 
 💰 *Subtotal:* ${currency} ${subtotal.toLocaleString()}
 
-Salam KaruKala Artisans! I placed this order from your website. Please check my items and let's finalize the order and delivery details!`;
+Salam Falguni Handcraft! I placed this order from your website. Please check my items and let's finalize the order and delivery details!`;
 
         const waUrl = `https://wa.me/${ownerWhatsApp}?text=${encodeURIComponent(waMessage)}`;
         window.open(waUrl, '_blank');
