@@ -61,32 +61,33 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
                 Explore Handcrafted Gallery <ArrowRight size={17} />
               </button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#15803d', fontSize: '0.88rem', fontWeight: 600 }}>
-                <MessageSquare size={16} /> WhatsApp Negotiation Available
-              </div>
-            </div>
-
-            {/* Feature Highlights Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '1rem',
-              marginTop: '2.2rem',
-              paddingTop: '1.5rem',
-              borderTop: '1px solid #e7e2db'
-            }}>
-              <div>
-                <div style={{ color: '#e26d21', fontWeight: 700, fontSize: '1.15rem' }}>3 Photos / Item</div>
-                <div style={{ fontSize: '0.78rem', color: '#78716c' }}>Front, side & detail views</div>
-              </div>
-              <div>
-                <div style={{ color: '#15803d', fontWeight: 700, fontSize: '1.15rem' }}>WhatsApp Chat</div>
-                <div style={{ fontSize: '0.78rem', color: '#78716c' }}>Direct artisan negotiation</div>
-              </div>
-              <div>
-                <div style={{ color: '#1c1917', fontWeight: 700, fontSize: '1.15rem' }}>100% Artisan</div>
-                <div style={{ fontSize: '0.78rem', color: '#78716c' }}>Ethically handmade items</div>
-              </div>
+              <a
+                href="https://wa.me/8801712345678?text=Salam%20Falguni%20Handcraft!%20I%20would%20like%20to%20talk%20with%20you%20about%20your%20jewelry."
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  color: '#15803d',
+                  fontSize: '0.92rem',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  padding: '0.65rem 1.15rem',
+                  borderRadius: 'var(--radius-full)',
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#dcfce7';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = '#f0fdf4';
+                }}
+              >
+                <MessageSquare size={16} /> Talk with us by WhatsApp
+              </a>
             </div>
           </div>
 
