@@ -14,7 +14,7 @@
       "name": "Clay and Thread Jewelry",
       "slug": "clay-and-thread-jwelery",
       "description": "Baked terracotta clay beads, hand-painted floral motifs and vibrant resham silk threads.",
-      "image": "https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=600&q=80",
+      "image": "/terracotta-lotus-choker.jpg",
       "icon": "Palette"
     },
     {
@@ -22,7 +22,7 @@
       "name": "Bracelet and Bangles",
       "slug": "bracelet-and-bangles",
       "description": "Artisan beaten brass kadas, terracotta baked bangles, and embellished woven cuffs.",
-      "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=600&q=80",
+      "image": "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=600&q=80",
       "icon": "CircleDot"
     },
     {
@@ -38,7 +38,7 @@
       "name": "Men's Bracelet",
       "slug": "mans-bracelet",
       "description": "Natural volcanic lava stone, tiger eye beads, braided cord, and rugged brass accents.",
-      "image": "https://images.unsplash.com/photo-1611591475843-162e24749f7e?auto=format&fit=crop&w=600&q=80",
+      "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=600&q=80",
       "icon": "Gem"
     },
     {
@@ -53,9 +53,9 @@
       "id": "baby-jwelery",
       "name": "Baby Jewelry",
       "slug": "baby-jwelery",
-      "description": "Gentle, non-allergic soft silver nazar payals, black protective thread nazariya, and smooth beads.",
+      "description": "Baby-safe nazariya black beads, soft chime silver bells, and smooth organic wooden beads.",
       "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80",
-      "icon": "Smile"
+      "icon": "Baby"
     }
   ],
   "products": [
@@ -73,11 +73,11 @@
       ],
       "stock": 14,
       "rating": 4.9,
-      "image": "https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=800&q=80",
+      "image": "/terracotta-lotus-choker.jpg",
       "images": [
-        "https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80"
+        "/terracotta-lotus-choker.jpg",
+        "/terracotta-choker-macro.jpg",
+        "/terracotta-jhumkas-detail.jpg"
       ]
     },
     {
@@ -94,9 +94,9 @@
       ],
       "stock": 22,
       "rating": 4.8,
-      "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80",
+      "image": "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80",
       "images": [
-        "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=800&q=80"
       ]
@@ -118,7 +118,7 @@
       "image": "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
       "images": [
         "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=800&q=80",
+        "/terracotta-jhumkas-detail.jpg",
         "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80"
       ]
     },
@@ -136,11 +136,11 @@
       ],
       "stock": 19,
       "rating": 4.9,
-      "image": "https://images.unsplash.com/photo-1611591475843-162e24749f7e?auto=format&fit=crop&w=800&q=80",
+      "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80",
       "images": [
-        "https://images.unsplash.com/photo-1611591475843-162e24749f7e?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80"
+        "https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=800&q=80"
       ]
     },
     {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles, MessageSquare, Box, ArrowRight } from 'lucide-react';
 
-export default function HeroBanner({ categories, onSelectCategory, onScrollToProducts }) {
+export default function HeroBanner({ categories, onSelectCategory, onScrollToProducts, featuredProduct, onSelectProduct }) {
   return (
     <section style={{
       position: 'relative',
@@ -91,7 +91,10 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
           </div>
 
           {/* Right Visual Showcase Card */}
-          <div style={{ position: 'relative' }}>
+          <div
+            onClick={() => onSelectProduct && featuredProduct && onSelectProduct(featuredProduct)}
+            style={{ position: 'relative', cursor: onSelectProduct ? 'pointer' : 'default' }}
+          >
             <div style={{
               background: '#ffffff',
               borderRadius: 'var(--radius-lg)',
@@ -99,16 +102,27 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
               padding: '0.75rem',
               position: 'relative',
               boxShadow: '0 15px 35px rgba(28, 25, 23, 0.08)',
-              border: '1px solid #e7e2db'
-            }}>
+              border: '1px solid #e7e2db',
+              transition: 'transform 0.25s ease, box-shadow 0.25s ease'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 20px 40px rgba(226, 109, 33, 0.16)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 15px 35px rgba(28, 25, 23, 0.08)';
+            }}
+            >
               <img
-                src="https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=900&q=80"
-                alt="Handcrafted Jewelry Collection"
+                src="/terracotta-lotus-choker.jpg"
+                alt="Terracotta Lotus Choker Set"
                 style={{
                   width: '100%',
-                  height: '350px',
+                  height: '380px',
                   objectFit: 'cover',
-                  borderRadius: 'calc(var(--radius-lg) - 6px)'
+                  borderRadius: 'calc(var(--radius-lg) - 6px)',
+                  display: 'block'
                 }}
               />
 
@@ -155,9 +169,12 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
                   <div style={{ fontSize: '0.75rem', color: '#78716c' }}>Artisan Heritage Collection</div>
                   <strong style={{ fontSize: '0.92rem', color: '#1c1917' }}>Terracotta Lotus Choker Set</strong>
                 </div>
-                <span className="badge" style={{ background: '#e26d21', color: '#ffffff', fontWeight: 700 }}>
-                  ৳ 1,450
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="badge" style={{ background: '#e26d21', color: '#ffffff', fontWeight: 700 }}>
+                    ৳ 1,450
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: '#e26d21', fontWeight: 600 }}>View 3 Angles →</span>
+                </div>
               </div>
             </div>
           </div>

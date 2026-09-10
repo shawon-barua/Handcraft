@@ -218,6 +218,8 @@ export default function App() {
               scrollToProducts();
             }}
             onScrollToProducts={scrollToProducts}
+            featuredProduct={products.find(p => p.id === 'p-101') || products[0]}
+            onSelectProduct={setSelectedProductForDetail}
           />
 
           {/* Product Gallery Showcase */}
@@ -544,6 +546,7 @@ export default function App() {
       {selectedProductForDetail && (
         <ProductDetailModal
           product={selectedProductForDetail}
+          settings={settings}
           isOpen={!!selectedProductForDetail}
           onClose={() => setSelectedProductForDetail(null)}
           onAddToCart={(prod, qty) => {

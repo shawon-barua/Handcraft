@@ -14,7 +14,7 @@
       "name": "Clay and Thread Jewelry",
       "slug": "clay-and-thread-jwelery",
       "description": "Baked terracotta clay beads, hand-painted floral motifs and vibrant resham silk threads.",
-      "image": "https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=600&q=80",
+      "image": "/terracotta-lotus-choker.jpg",
       "icon": "Palette"
     },
     {
@@ -22,7 +22,7 @@
       "name": "Bracelet and Bangles",
       "slug": "bracelet-and-bangles",
       "description": "Artisan beaten brass kadas, terracotta baked bangles, and embellished woven cuffs.",
-      "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=600&q=80",
+      "image": "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=600&q=80",
       "icon": "CircleDot"
     },
     {
@@ -38,7 +38,7 @@
       "name": "Men's Bracelet",
       "slug": "mans-bracelet",
       "description": "Natural volcanic lava stone, tiger eye beads, braided cord, and rugged brass accents.",
-      "image": "https://images.unsplash.com/photo-1611591475843-162e24749f7e?auto=format&fit=crop&w=600&q=80",
+      "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=600&q=80",
       "icon": "Gem"
     },
     {
@@ -53,9 +53,9 @@
       "id": "baby-jwelery",
       "name": "Baby Jewelry",
       "slug": "baby-jwelery",
-      "description": "Gentle, non-allergic soft silver nazar payals, black protective thread nazariya, and smooth beads.",
+      "description": "Baby-safe nazariya black beads, soft chime silver bells, and smooth organic wooden beads.",
       "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80",
-      "icon": "Smile"
+      "icon": "Baby"
     }
   ],
   "products": [
@@ -67,14 +67,17 @@
       "originalPrice": 1850,
       "description": "Intricately hand-sculpted river clay medallion with hand-painted lotus petals using natural waterproof pigments, suspended on rich crimson resham silk thread with adjustable bead slider.",
       "materials": "River Terracotta Clay, Resham Silk Thread, Brass Beads",
-      "badges": ["Bestseller", "100% Organic Clay"],
+      "badges": [
+        "Bestseller",
+        "100% Organic Clay"
+      ],
       "stock": 14,
       "rating": 4.9,
-      "image": "https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=800&q=80",
+      "image": "/terracotta-lotus-choker.jpg",
       "images": [
-        "https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80"
+        "/terracotta-lotus-choker.jpg",
+        "/terracotta-choker-macro.jpg",
+        "/terracotta-jhumkas-detail.jpg"
       ]
     },
     {
@@ -85,12 +88,15 @@
       "originalPrice": 1200,
       "description": "Hand-hammered pure brass open kada inspired by traditional Zamindari motifs. Coated with micro-lacquer to prevent tarnishing. Fully adjustable for all wrist sizes.",
       "materials": "Pure Beaten Brass, Antique Lacquer Polish",
-      "badges": ["Handcrafted", "Adjustable Size"],
+      "badges": [
+        "Handcrafted",
+        "Adjustable Size"
+      ],
       "stock": 22,
       "rating": 4.8,
-      "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80",
+      "image": "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80",
       "images": [
-        "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=800&q=80"
       ]
@@ -103,13 +109,16 @@
       "originalPrice": 700,
       "description": "Lightweight terracotta clay jhumkas fired at high temperature for maximum durability, accented with emerald green bead clusters and 925 sterling silver plated hypoallergenic ear studs.",
       "materials": "Baked Terracotta, Hypoallergenic Posts, Glass Seed Beads",
-      "badges": ["Ultra Lightweight", "Hypoallergenic"],
+      "badges": [
+        "Ultra Lightweight",
+        "Hypoallergenic"
+      ],
       "stock": 35,
-      "rating": 5.0,
+      "rating": 5,
       "image": "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
       "images": [
         "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=800&q=80",
+        "/terracotta-jhumkas-detail.jpg",
         "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80"
       ]
     },
@@ -121,14 +130,17 @@
       "originalPrice": 950,
       "description": "8mm natural matte black onyx and genuine porous lava rock beads strung on heavy-duty silicone stretch cord, finished with an engraved brass lionhead bead.",
       "materials": "Natural Matte Onyx, Volcanic Lava Stone, Antique Brass",
-      "badges": ["Men's Favorite", "Aroma Diffuser"],
+      "badges": [
+        "Men's Favorite",
+        "Aroma Diffuser"
+      ],
       "stock": 19,
       "rating": 4.9,
-      "image": "https://images.unsplash.com/photo-1611591475843-162e24749f7e?auto=format&fit=crop&w=800&q=80",
+      "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80",
       "images": [
-        "https://images.unsplash.com/photo-1611591475843-162e24749f7e?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80"
+        "https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=800&q=80"
       ]
     },
     {
@@ -139,7 +151,10 @@
       "originalPrice": 1100,
       "description": "Double-layered German silver anklet handcrafted with soft musical ghungroo bells that make an enchanting subtle chime with every step. S-hook secure closure.",
       "materials": "German Silver Alloy, Musical Brass Ghungroos",
-      "badges": ["Melodious Bell", "Traditional"],
+      "badges": [
+        "Melodious Bell",
+        "Traditional"
+      ],
       "stock": 12,
       "rating": 4.7,
       "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
@@ -157,9 +172,12 @@
       "originalPrice": 850,
       "description": "Crafted with baby-safe smooth edges and protective black glass nazariya beads with soft-tinkle tiny silver bells. Anti-allergic, non-toxic, and adjustable for newborn to 2-year-olds.",
       "materials": "Lead-Free Silver Finish, Smooth Protective Glass Beads",
-      "badges": ["Baby Safe", "Non-Allergic"],
+      "badges": [
+        "Baby Safe",
+        "Non-Allergic"
+      ],
       "stock": 25,
-      "rating": 5.0,
+      "rating": 5,
       "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
       "images": [
         "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
@@ -175,7 +193,10 @@
       "originalPrice": 800,
       "description": "Pair of bangles wrapped in premium micro-sheen raw silk threads with delicate gold zari borders and crystal stones. Comfortable velvet lining inside.",
       "materials": "Pure Silk Thread, Acrylic Core, Zari Embroidery",
-      "badges": ["Festive Wear", "Custom Colors"],
+      "badges": [
+        "Festive Wear",
+        "Custom Colors"
+      ],
       "stock": 18,
       "rating": 4.8,
       "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
@@ -193,7 +214,10 @@
       "originalPrice": 1150,
       "description": "Genuine full-grain braided leather band paired with an artisan hand-stamped solid copper plate. Magnetic slide-lock clasp in stainless steel.",
       "materials": "Top-Grain Leather, Solid Copper, 316L Stainless Steel",
-      "badges": ["Premium Leather", "Rugged Style"],
+      "badges": [
+        "Premium Leather",
+        "Rugged Style"
+      ],
       "stock": 15,
       "rating": 4.9,
       "image": "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80",
@@ -211,7 +235,10 @@
       "originalPrice": 550,
       "description": "Natural hand-selected cowrie shells woven into organic wax-coated hemp cord with turquoise accent beads. Waterproof and beach-ready.",
       "materials": "Natural Sea Cowrie Shells, Waterproof Hemp Cord, Turquoise Beads",
-      "badges": ["Waterproof", "Bohemian"],
+      "badges": [
+        "Waterproof",
+        "Bohemian"
+      ],
       "stock": 30,
       "rating": 4.6,
       "image": "https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=800&q=80",
@@ -229,7 +256,10 @@
       "originalPrice": 620,
       "description": "Smooth organic neem wood beads alternating with soft silver-finish protection charms. Soft cotton cord with sliding knot for easy growing fit.",
       "materials": "Medicinal Neem Wood, Smooth Beads, Soft Cotton Thread",
-      "badges": ["Organic Wood", "Newborn Friendly"],
+      "badges": [
+        "Organic Wood",
+        "Newborn Friendly"
+      ],
       "stock": 28,
       "rating": 4.9,
       "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
@@ -241,6 +271,37 @@
     }
   ],
   "orders": [
+    {
+      "id": "ORD-1875",
+      "orderDate": "2026-09-10T04:32:12.451Z",
+      "channel": "email",
+      "status": "In Negotiation",
+      "customer": {
+        "name": "Shawon Barua",
+        "phone": "01911053670",
+        "address": "Cox's Bazar",
+        "city": "Chittagong",
+        "notes": ""
+      },
+      "items": [
+        {
+          "id": "p-102",
+          "title": "Dual-Tone Royal Filigree Brass Kada & Bangle",
+          "price": 980,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80"
+        },
+        {
+          "id": "p-103",
+          "title": "Terracotta Sunburst Temple Jhumkas",
+          "price": 550,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80"
+        }
+      ],
+      "totalAmount": 3060,
+      "specialNote": ""
+    },
     {
       "id": "ORD-1001",
       "orderDate": "2026-09-08T14:32:00.000Z",

@@ -15,7 +15,7 @@ import {
   Clock
 } from 'lucide-react';
 
-export default function ProductDetailModal({ product, isOpen, onClose, onAddToCart }) {
+export default function ProductDetailModal({ product, settings, isOpen, onClose, onAddToCart }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [copied, setCopied] = useState(false);
@@ -37,13 +37,13 @@ export default function ProductDetailModal({ product, isOpen, onClose, onAddToCa
     : [product.image, product.image, product.image].filter(Boolean);
 
   while (images.length < 3) {
-    images.push(images[0] || 'https://images.unsplash.com/photo-1611591475847-19069d511977?auto=format&fit=crop&w=800&q=80');
+    images.push(images[0] || '/terracotta-lotus-choker.jpg');
   }
 
   const imageLabels = [
-    { label: 'Front View', sub: 'Primary Angle' },
-    { label: 'Side & Detail', sub: 'Profile Angle' },
-    { label: 'Craft & Texture', sub: 'Macro View' }
+    { label: 'Front Overview', sub: 'Primary Angle' },
+    { label: 'Macro Details', sub: 'Close-Up View' },
+    { label: 'Matching Earrings', sub: 'Craft & Profile' }
   ];
 
   const currentImage = images[activeImageIndex] || images[0];
@@ -64,31 +64,28 @@ export default function ProductDetailModal({ product, isOpen, onClose, onAddToCa
     }
   };
 
-  // WhatsApp direct negotiation link for this product
+  const whatsappNumber = settings?.whatsappNumber || '8801712345678';
   const getWhatsAppLink = () => {
-    const phone = '8801700000000';
     const text = encodeURIComponent(
-      `Hello! I am interested in purchasing this handcrafted item:\n\n` +
+      `Salam Falguni Handcraft! I am interested in ordering this handcrafted item:\n\n` +
       `*Product:* ${product.title}\n` +
-      `*Category:* ${product.category}\n` +
       `*Price:* ৳${product.price.toLocaleString()} BDT\n` +
       `*Quantity:* ${quantity}\n` +
-      `*Estimated Total:* ৳${(product.price * quantity).toLocaleString()} BDT\n` +
-      `*Product Link:* ${window.location.origin}/?product=${product.id}\n\n` +
-      `Could you please let me know availability and delivery options?`
+      `*Estimated Total:* ৳${(product.price * quantity).toLocaleString()} BDT\n\n` +
+      `Please let me know how we can proceed with colors and delivery!`
     );
-    return `https://wa.me/${phone}?text=${text}`;
+    return `https://wa.me/${whatsappNumber}?text=${text}`;
   };
 
   const getEmailLink = () => {
-    const email = 'artisan@handcraftedbd.com';
+    const email = settings?.email || 'falgunihandcraft@gmail.com';
     const subject = encodeURIComponent(`Order Inquiry: ${product.title}`);
     const body = encodeURIComponent(
-      `Hello Artisan Team,\n\nI want to inquire about purchasing:\n\n` +
+      `Salam Falguni Handcraft,\n\nI want to inquire about purchasing:\n\n` +
       `Product: ${product.title}\n` +
       `Price: ৳${product.price} BDT\n` +
       `Quantity: ${quantity}\n\n` +
-      `Please provide details on delivery and payment.`
+      `Please provide details on delivery and custom color options.`
     );
     return `mailto:${email}?subject=${subject}&body=${body}`;
   };
@@ -97,7 +94,7 @@ export default function ProductDetailModal({ product, isOpen, onClose, onAddToCa
     if (navigator.share) {
       navigator.share({
         title: product.title,
-        text: `Check out ${product.title} on Handcrafted Heritage`,
+        text: `Check out ${product.title} on Falguni Handcraft`,
         url: window.location.href,
       }).catch(() => {});
     } else {
@@ -112,142 +109,267 @@ export default function ProductDetailModal({ product, isOpen, onClose, onAddToCa
     : 0;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-stone-900/70 backdrop-blur-sm animate-fade-in overflow-y-auto"
-      onClick={onClose}
-    >
+    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
       <div
-        className="relative w-full max-w-5xl my-auto bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden"
+        className="modal-content"
         onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '920px',
+          width: '94vw',
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0,
+          background: '#ffffff',
+          borderRadius: 'var(--radius-lg)',
+          overflow: 'hidden',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+          border: '1px solid #e7e2db'
+        }}
       >
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-[#fbf9f6]">
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full bg-brand-orange-50 text-brand-orange border border-brand-orange-200">
+        {/* Header Bar */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '1rem 1.5rem',
+          borderBottom: '1px solid #e7e2db',
+          background: '#faf8f5'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <span className="badge badge-gold" style={{ textTransform: 'capitalize' }}>
               {product.category?.replace(/-/g, ' ')}
             </span>
-            <span className="hidden sm:inline-flex items-center gap-1 text-xs text-stone-500">
-              <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
-              100% Artisan Handcrafted
+            <span style={{ fontSize: '0.78rem', color: '#78716c', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Sparkles size={13} color="#e26d21" /> 100% Artisan Handcrafted
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <button
               onClick={handleShare}
               title="Share product"
-              className="p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-full transition-colors relative"
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                border: '1px solid #d6d0c7',
+                background: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#1c1917',
+                cursor: 'pointer',
+                position: 'relative'
+              }}
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 size={16} color="#1c1917" />
               {copied && (
-                <span className="absolute -bottom-7 right-0 text-[11px] bg-stone-800 text-white px-2 py-0.5 rounded shadow">
+                <span style={{
+                  position: 'absolute',
+                  bottom: '-1.8rem',
+                  right: 0,
+                  fontSize: '0.7rem',
+                  background: '#1c1917',
+                  color: '#fff',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  whiteSpace: 'nowrap',
+                  zIndex: 10
+                }}>
                   Copied!
                 </span>
               )}
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-full transition-colors"
+              title="Close modal"
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                border: '1px solid #d6d0c7',
+                background: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#1c1917',
+                cursor: 'pointer'
+              }}
             >
-              <X className="w-5 h-5" />
+              <X size={18} color="#1c1917" />
             </button>
           </div>
         </div>
 
         {/* Modal Body: 2 Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-          {/* Left Column: 3-Picture Gallery (7 cols) */}
-          <div className="lg:col-span-7 p-6 sm:p-8 bg-[#fdfcfb] flex flex-col border-b lg:border-b-0 lg:border-r border-stone-100">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          overflowY: 'auto',
+          flex: 1
+        }}>
+          {/* Left Column: 3-Picture Gallery */}
+          <div style={{
+            padding: '1.5rem',
+            background: '#fcfbfa',
+            borderRight: '1px solid #e7e2db',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
             {/* Main Image Showcase */}
-            <div className="relative aspect-[4/3] sm:aspect-square w-full rounded-xl overflow-hidden bg-stone-100 shadow-inner group border border-stone-200/80">
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              aspectRatio: '4/3',
+              borderRadius: 'var(--radius-md)',
+              overflow: 'hidden',
+              background: '#f5f3ee',
+              border: '1px solid #e7e2db'
+            }}>
               <img
                 src={currentImage}
                 alt={`${product.title} - View ${activeImageIndex + 1}`}
-                className={`w-full h-full object-cover transition-transform duration-500 ${
-                  isZoomed ? 'scale-125 cursor-zoom-out' : 'group-hover:scale-105 cursor-zoom-in'
-                }`}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'transform 0.4s ease',
+                  transform: isZoomed ? 'scale(1.4)' : 'scale(1)',
+                  cursor: isZoomed ? 'zoom-out' : 'zoom-in'
+                }}
                 onClick={() => setIsZoomed(!isZoomed)}
               />
 
               {/* Prev / Next Arrows */}
               <button
                 onClick={handlePrev}
-                aria-label="Previous image"
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur text-stone-800 shadow-md flex items-center justify-center hover:bg-brand-orange hover:text-white transition-all opacity-80 group-hover:opacity-100"
+                style={{
+                  position: 'absolute',
+                  left: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.92)',
+                  border: '1px solid #e7e2db',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft size={20} />
               </button>
               <button
                 onClick={handleNext}
-                aria-label="Next image"
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur text-stone-800 shadow-md flex items-center justify-center hover:bg-brand-orange hover:text-white transition-all opacity-80 group-hover:opacity-100"
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.92)',
+                  border: '1px solid #e7e2db',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight size={20} />
               </button>
 
-              {/* Image Counter & Zoom Hint */}
-              <div className="absolute top-3 left-3 flex items-center gap-2">
-                <span className="px-2.5 py-1 bg-stone-900/75 backdrop-blur text-white text-xs font-semibold rounded-md shadow">
+              {/* Badge Counter */}
+              <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem', display: 'flex', gap: '0.4rem' }}>
+                <span style={{
+                  background: 'rgba(28, 25, 23, 0.82)',
+                  backdropFilter: 'blur(4px)',
+                  color: '#fff',
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '4px'
+                }}>
                   Photo {activeImageIndex + 1} of {images.length}
                 </span>
                 {discountPercent > 0 && (
-                  <span className="px-2.5 py-1 bg-brand-orange text-white text-xs font-bold rounded-md shadow">
+                  <span className="badge" style={{ background: '#e26d21', color: '#fff', fontWeight: 700 }}>
                     {discountPercent}% OFF
                   </span>
                 )}
               </div>
 
+              {/* Zoom Button */}
               <button
                 onClick={() => setIsZoomed(!isZoomed)}
-                className="absolute bottom-3 right-3 p-2 bg-white/90 hover:bg-white text-stone-700 rounded-lg shadow text-xs font-medium flex items-center gap-1.5 transition-all"
+                style={{
+                  position: 'absolute',
+                  bottom: '0.75rem',
+                  right: '0.75rem',
+                  padding: '0.35rem 0.65rem',
+                  background: 'rgba(255, 255, 255, 0.92)',
+                  borderRadius: '4px',
+                  border: '1px solid #e7e2db',
+                  fontSize: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  cursor: 'pointer'
+                }}
               >
-                <Maximize2 className="w-3.5 h-3.5" />
-                <span>{isZoomed ? 'Reset' : 'Zoom'}</span>
+                <Maximize2 size={13} /> {isZoomed ? 'Reset' : 'Zoom'}
               </button>
             </div>
 
             {/* 3 Dedicated Picture Thumbnails */}
-            <div className="mt-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                  3 Separate Views
-                </span>
-                <span className="text-xs text-brand-orange font-medium">
-                  Click to switch view
-                </span>
+            <div style={{ marginTop: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.75rem' }}>
+                <strong style={{ color: '#78716c', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  3 High-Definition Angles
+                </strong>
+                <span style={{ color: '#e26d21', fontWeight: 600 }}>Click to switch angle</span>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
                 {images.slice(0, 3).map((imgUrl, idx) => {
                   const isActive = idx === activeImageIndex;
                   return (
                     <button
                       key={idx}
                       onClick={() => setActiveImageIndex(idx)}
-                      className={`relative flex flex-col rounded-xl overflow-hidden border-2 transition-all text-left bg-white shadow-sm ${
-                        isActive
-                          ? 'border-brand-orange ring-2 ring-brand-orange/20 shadow-md'
-                          : 'border-stone-200 hover:border-brand-orange/60 opacity-80 hover:opacity-100'
-                      }`}
+                      style={{
+                        borderRadius: 'var(--radius-sm)',
+                        overflow: 'hidden',
+                        border: isActive ? '2px solid #e26d21' : '1.5px solid #e7e2db',
+                        background: '#ffffff',
+                        padding: 0,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        boxShadow: isActive ? '0 0 0 2px rgba(226, 109, 33, 0.2)' : 'none',
+                        transition: 'all 0.2s ease'
+                      }}
                     >
-                      <div className="aspect-[4/3] w-full overflow-hidden bg-stone-100">
+                      <div style={{ width: '100%', height: '62px', overflow: 'hidden' }}>
                         <img
                           src={imgUrl}
                           alt={`View ${idx + 1}`}
-                          className="w-full h-full object-cover"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                       </div>
-                      <div className="p-2 bg-[#fcfbfa] border-t border-stone-100">
-                        <p className={`text-[11px] font-bold leading-tight ${isActive ? 'text-brand-orange' : 'text-stone-800'}`}>
+                      <div style={{ padding: '0.35rem 0.45rem', background: '#faf8f5', borderTop: '1px solid #e7e2db' }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: isActive ? '#e26d21' : '#1c1917' }}>
                           {imageLabels[idx]?.label || `Photo ${idx + 1}`}
-                        </p>
-                        <p className="text-[10px] text-stone-400">
+                        </div>
+                        <div style={{ fontSize: '0.65rem', color: '#78716c' }}>
                           {imageLabels[idx]?.sub || 'Angle'}
-                        </p>
+                        </div>
                       </div>
-                      {isActive && (
-                        <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-orange" />
-                      )}
                     </button>
                   );
                 })}
@@ -255,138 +377,148 @@ export default function ProductDetailModal({ product, isOpen, onClose, onAddToCa
             </div>
           </div>
 
-          {/* Right Column: Details & Actions (5 cols) */}
-          <div className="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between">
+          {/* Right Column: Details & Actions */}
+          <div style={{
+            padding: '1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}>
             <div>
               {/* Category & Stock */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-brand-orange uppercase tracking-wider">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e26d21', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Handcrafted Artisan Series
                 </span>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  In Stock ({product.stock || 10} units)
+                <span className="badge" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem' }}>
+                  <CheckCircle2 size={13} /> In Stock ({product.stock || 14} units)
                 </span>
               </div>
 
               {/* Title */}
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 leading-tight mb-3">
+              <h2 style={{ fontSize: '1.45rem', lineHeight: 1.25, color: '#1c1917', marginBottom: '0.75rem' }}>
                 {product.title}
               </h2>
 
-              {/* Price Section */}
-              <div className="flex items-baseline gap-3 pb-4 mb-4 border-b border-stone-100">
-                <span className="text-3xl font-bold text-brand-orange">
-                  ৳{product.price?.toLocaleString()}
+              {/* Price */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', paddingBottom: '0.75rem', marginBottom: '0.75rem', borderBottom: '1px solid #e7e2db' }}>
+                <span style={{ fontSize: '1.75rem', fontWeight: 800, color: '#e26d21' }}>
+                  ৳ {product.price?.toLocaleString()}
                 </span>
                 {product.originalPrice && product.originalPrice > product.price && (
-                  <span className="text-lg text-stone-400 line-through">
-                    ৳{product.originalPrice?.toLocaleString()}
+                  <span style={{ fontSize: '1.05rem', color: '#a8a29e', textDecoration: 'line-through' }}>
+                    ৳ {product.originalPrice?.toLocaleString()}
                   </span>
                 )}
-                <span className="text-xs text-stone-500 font-medium ml-auto">
-                  BDT (Negotiable via WhatsApp)
+                <span style={{ fontSize: '0.75rem', color: '#78716c', marginLeft: 'auto' }}>
+                  BDT (Direct Order / Inquiries via WhatsApp)
                 </span>
               </div>
 
               {/* Description */}
-              <div className="mb-5">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1.5">
-                  Artisan Story & Description
-                </h3>
-                <p className="text-sm text-stone-600 leading-relaxed">
-                  {product.description ||
-                    'Every curve and color of this piece is hand-shaped and painted by traditional Bengali artisans. Created with meticulous passion, ensuring genuine uniqueness.'}
+              <div style={{ marginBottom: '1.1rem' }}>
+                <h4 style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#78716c', marginBottom: '0.35rem', letterSpacing: '0.04em' }}>
+                  Artisan Craftsmanship & Story
+                </h4>
+                <p style={{ fontSize: '0.88rem', color: '#57534e', lineHeight: 1.6 }}>
+                  {product.description || 'Intricately hand-sculpted river clay medallion with hand-painted lotus petals using natural waterproof pigments, suspended on rich crimson resham silk thread with adjustable bead slider.'}
                 </p>
               </div>
 
-              {/* Craftsmanship & Materials */}
-              <div className="p-3.5 bg-[#fbf9f6] rounded-xl border border-stone-200/80 mb-5 space-y-2">
-                <div className="flex items-center gap-2 text-xs">
-                  <Sparkles className="w-4 h-4 text-brand-orange shrink-0" />
-                  <span className="font-semibold text-stone-800">Materials:</span>
-                  <span className="text-stone-600">{product.materials || 'Pure Organic Clay & Silk Thread'}</span>
+              {/* Craftsmanship Specifications */}
+              <div style={{
+                background: '#faf8f5',
+                border: '1px solid #e7e2db',
+                borderRadius: 'var(--radius-sm)',
+                padding: '0.85rem 1rem',
+                marginBottom: '1.1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.45rem',
+                fontSize: '0.8rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Sparkles size={15} color="#e26d21" />
+                  <strong style={{ color: '#1c1917' }}>Materials:</strong>
+                  <span style={{ color: '#57534e' }}>{product.materials || 'Baked Terracotta, Resham Silk Thread, Brass Beads'}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <ShieldCheck className="w-4 h-4 text-brand-orange shrink-0" />
-                  <span className="font-semibold text-stone-800">Artisan Guarantee:</span>
-                  <span className="text-stone-600">100% Eco-friendly, Hand-sculpted</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ShieldCheck size={15} color="#e26d21" />
+                  <strong style={{ color: '#1c1917' }}>Quality:</strong>
+                  <span style={{ color: '#57534e' }}>100% Eco-Friendly Clay, Waterproof Polish</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <Clock className="w-4 h-4 text-brand-orange shrink-0" />
-                  <span className="font-semibold text-stone-800">Crafting Time:</span>
-                  <span className="text-stone-600">3-4 Days per unique piece</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Clock size={15} color="#e26d21" />
+                  <strong style={{ color: '#1c1917' }}>Crafting Time:</strong>
+                  <span style={{ color: '#57534e' }}>3-4 Days of meticulous artisan effort</span>
                 </div>
               </div>
 
               {/* Quantity Stepper */}
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-xs font-bold uppercase tracking-wider text-stone-600">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', color: '#57534e' }}>
                   Quantity:
                 </span>
-                <div className="flex items-center border border-stone-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #d6d0c7', borderRadius: 'var(--radius-sm)', background: '#fff' }}>
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-1.5 text-stone-600 hover:bg-stone-100 font-bold transition-colors"
+                    style={{ padding: '0.4rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}
                   >
                     -
                   </button>
-                  <span className="px-4 py-1.5 text-sm font-bold text-stone-800 min-w-[2.5rem] text-center">
+                  <span style={{ padding: '0.4rem 0.85rem', fontWeight: 700, fontSize: '0.9rem', minWidth: '2.5rem', textAlign: 'center' }}>
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity(Math.min(product.stock || 20, quantity + 1))}
-                    className="px-3 py-1.5 text-stone-600 hover:bg-stone-100 font-bold transition-colors"
+                    style={{ padding: '0.4rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}
                   >
                     +
                   </button>
                 </div>
-                <span className="text-xs text-stone-500">
-                  Total: <strong className="text-stone-900 font-bold">৳{(product.price * quantity).toLocaleString()}</strong>
+                <span style={{ fontSize: '0.82rem', color: '#78716c' }}>
+                  Total: <strong style={{ color: '#1c1917' }}>৳ {(product.price * quantity).toLocaleString()}</strong>
                 </span>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="space-y-2.5 pt-4 border-t border-stone-100">
-              {/* Add to Cart */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', paddingTop: '1rem', borderTop: '1px solid #e7e2db' }}>
               <button
                 onClick={handleAddToCart}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl font-bold text-sm bg-brand-orange text-white hover:bg-brand-orange-hover shadow-md hover:shadow-lg transition-all active:scale-[0.99]"
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem' }}
               >
-                <ShoppingBag className="w-4 h-4" />
-                Add to Cart (৳{(product.price * quantity).toLocaleString()})
+                <ShoppingBag size={18} /> Add to Cart (৳ {(product.price * quantity).toLocaleString()})
               </button>
 
-              {/* Direct WhatsApp Negotiation */}
               <a
                 href={getWhatsAppLink()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all"
+                className="btn btn-whatsapp"
+                style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem' }}
               >
-                <MessageCircle className="w-4 h-4" />
-                Negotiate & Order on WhatsApp
+                <MessageCircle size={18} /> Talk with Us by WhatsApp
               </a>
 
-              {/* Email Inquiry */}
               <a
                 href={getEmailLink()}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-xs text-stone-600 hover:text-stone-900 hover:bg-stone-100 border border-stone-200 transition-colors"
+                className="btn btn-secondary"
+                style={{ width: '100%', padding: '0.55rem', fontSize: '0.85rem' }}
               >
-                <Mail className="w-3.5 h-3.5 text-stone-500" />
-                Send Inquiry via Email
+                <Mail size={16} /> Send Email Inquiry
               </a>
 
-              {/* Trust Indicators */}
-              <div className="pt-3 flex items-center justify-center gap-4 text-[11px] text-stone-400">
-                <span className="flex items-center gap-1">
-                  <Package className="w-3.5 h-3.5" /> Safe Packaging
+              {/* Delivery info */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.72rem', color: '#a8a29e', marginTop: '0.4rem' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <Package size={13} /> Eco-safe gift pack
                 </span>
                 <span>•</span>
-                <span>Fast Courier in Bangladesh</span>
+                <span>Home Delivery All Over Bangladesh</span>
                 <span>•</span>
-                <span>Cash on Delivery Available</span>
+                <span>Cash on Delivery</span>
               </div>
             </div>
           </div>
