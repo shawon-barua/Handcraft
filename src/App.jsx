@@ -8,7 +8,7 @@ import ProductDetailModal from './components/ProductDetailModal';
 import AdminPanel from './components/AdminPanel';
 import { 
   Sparkles, MessageSquare, ShoppingBag, Heart, ShieldCheck, 
-  RotateCcw, SlidersHorizontal, Images, Phone, Mail, ArrowUp
+  RotateCcw, SlidersHorizontal, Phone, Mail, ArrowUp
 } from 'lucide-react';
 
 export default function App() {
@@ -322,30 +322,9 @@ export default function App() {
           }}>
             <div className="container" style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '2rem'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '2.5rem'
             }}>
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                <div style={{
-                  width: '46px',
-                  height: '46px',
-                  borderRadius: '10px',
-                  background: '#fff7ed',
-                  border: '1px solid #fed7aa',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <Images size={22} color="#e26d21" />
-                </div>
-                <div>
-                  <h4 style={{ color: '#1c1917', fontSize: '1.05rem', marginBottom: '0.25rem' }}>3 Photos per Item</h4>
-                  <p style={{ fontSize: '0.82rem', color: '#78716c' }}>
-                    Inspect 3 separate high-definition angles (front, side & macro craftsmanship details) before ordering.
-                  </p>
-                </div>
-              </div>
 
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                 <div style={{
