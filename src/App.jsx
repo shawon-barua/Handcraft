@@ -223,27 +223,32 @@ export default function App() {
           />
 
           {/* Product Gallery Showcase */}
-          <section ref={productsSectionRef} style={{ padding: '3.5rem 0' }}>
+          <section ref={productsSectionRef} style={{
+            background: 'linear-gradient(180deg, #0b192e 0%, #112240 100%)',
+            padding: '4rem 0',
+            borderTop: '1px solid #1e3a5f',
+            borderBottom: '1px solid #1e3a5f'
+          }}>
             <div className="container">
               {/* Header & Filter Controls Bar */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '2rem',
+                marginBottom: '2.5rem',
                 flexWrap: 'wrap',
                 gap: '1rem',
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
-                paddingBottom: '1.25rem'
+                borderBottom: '1px solid rgba(255,255,255,0.12)',
+                paddingBottom: '1.5rem'
               }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span className="badge badge-gold">Handcrafted Catalog</span>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#93c5fd' }}>
                       Showing {filteredProducts.length} artisan creation(s)
                     </span>
                   </div>
-                  <h2 style={{ fontSize: '1.8rem', color: '#fef3c7', marginTop: '0.2rem' }}>
+                  <h2 style={{ fontSize: '2rem', color: '#ffffff', marginTop: '0.35rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
                     {activeCategory === 'all'
                       ? 'Featured Handcrafted Collection'
                       : categories.find(c => c.slug === activeCategory || c.id === activeCategory)?.name || 'Collection'}
@@ -252,18 +257,27 @@ export default function App() {
 
                 {/* Sort Dropdown & Quick WhatsApp inquiry */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    <SlidersHorizontal size={14} /> Sort:
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>
+                    <SlidersHorizontal size={14} color="#38bdf8" /> Sort:
                   </div>
                   <select
                     value={priceSort}
                     onChange={e => setPriceSort(e.target.value)}
-                    className="form-select"
-                    style={{ width: 'auto', padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}
+                    style={{
+                      width: 'auto',
+                      padding: '0.5rem 1rem',
+                      fontSize: '0.85rem',
+                      background: '#1e293b',
+                      color: '#ffffff',
+                      border: '1px solid #334155',
+                      borderRadius: 'var(--radius-md)',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
                   >
-                    <option value="featured">Featured Artisans</option>
-                    <option value="low-high">Price: Low to High</option>
-                    <option value="high-low">Price: High to Low</option>
+                    <option value="featured" style={{ background: '#1e293b', color: '#fff' }}>Featured Artisans</option>
+                    <option value="low-high" style={{ background: '#1e293b', color: '#fff' }}>Price: Low to High</option>
+                    <option value="high-low" style={{ background: '#1e293b', color: '#fff' }}>Price: High to Low</option>
                   </select>
                 </div>
               </div>
