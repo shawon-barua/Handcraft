@@ -46,6 +46,9 @@ export default function AdminPanel({
     badges: ['Handcrafted']
   });
 
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+
   const [settingsSaved, setSettingsSaved] = useState(false);
 
   // Fetch admin data
@@ -228,6 +231,61 @@ export default function AdminPanel({
       }
     } catch (err) {
       console.error('Failed to delete product:', err);
+    }
+  };
+
+  // Open Edit Product Modal
+  const handleOpenEditProduct = (prod) => {
+    const images = prod.images && prod.images.length > 0
+      ? prod.images
+      : [prod.image || '', '', ''];
+
+    setEditingProduct({
+      id: prod.id,
+      title: prod.title || '',
+      category: prod.category || 'clay-and-thread-jwelery',
+      price: prod.price || '',
+      originalPrice: prod.originalPrice || '',
+      description: prod.description || '',
+      materials: prod.materials || '',
+      stock: prod.stock !== undefined ? prod.stock : 10,
+      image1: images[0] || '',
+      image2: images[1] || '',
+      image3: images[2] || '',
+      badges: prod.badges || ['Handcrafted']
+    });
+    setShowEditProductModal(true);
+  };
+
+  // Save / Update Existing Product
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
+    if (!editingProduct || !editingProduct.title.trim() || !editingProduct.price) return;
+
+    try {
+      const imagesList = [editingProduct.image1, editingProduct.image2, editingProduct.image3].filter(Boolean);
+      const res = await fetch(`/api/products/${editingProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...editingProduct,
+          price: Number(editingProduct.price),
+          originalPrice: editingProduct.originalPrice ? Number(editingProduct.originalPrice) : undefined,
+          stock: Number(editingProduct.stock),
+          images: imagesList.length > 0 ? imagesList : undefined,
+          image: imagesList[0] || undefined
+        })
+      });
+
+      if (res.ok) {
+        setShowEditProductModal(false);
+        setEditingProduct(null);
+        const prods = await fetch('/api/products').then(r => r.json());
+        setProducts(prods);
+        if (onRefreshData) onRefreshData();
+      }
+    } catch (err) {
+      console.error('Failed to update product:', err);
     }
   };
 
@@ -883,7 +941,15 @@ export default function AdminPanel({
                           <td style={{ padding: '0.85rem 1rem', color: '#15803d', fontWeight: 600 }}>
                             {prod.stock} units
                           </td>
-                          <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
+                          <td style={{ padding: '0.85rem 1rem', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                            <button
+                              onClick={() => handleOpenEditProduct(prod)}
+                              className="btn btn-secondary btn-sm"
+                              style={{ color: '#0284c7', borderColor: '#bae6fd', padding: '0.35rem 0.65rem', marginRight: '0.4rem' }}
+                              title="Edit Product Details & Photos"
+                            >
+                              <Edit3 size={14} /> Edit
+                            </button>
                             <button
                               onClick={() => handleDeleteProduct(prod.id)}
                               className="btn btn-secondary btn-sm"
@@ -1206,6 +1272,152 @@ export default function AdminPanel({
                   </button>
                   <button type="submit" className="btn btn-primary">
                     Publish Product
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+        {/* ------------------------------------------------------------- */}
+        {/* EDIT PRODUCT MODAL                                            */}
+        {/* ------------------------------------------------------------- */}
+        {showEditProductModal && editingProduct && (
+          <div className="modal-overlay" onClick={() => setShowEditProductModal(false)}>
+            <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ padding: '1.75rem', maxWidth: '650px' }}>
+              <h2 style={{ fontSize: '1.3rem', color: '#fef3c7', marginBottom: '1.25rem' }}>
+                Edit Handcrafted Item (#{editingProduct.id})
+              </h2>
+              <form onSubmit={handleUpdateProduct}>
+                <div className="form-group">
+                  <label className="form-label">Item Title *</label>
+                  <input
+                    type="text"
+                    value={editingProduct.title}
+                    onChange={e => setEditingProduct({ ...editingProduct, title: e.target.value })}
+                    className="form-input"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Category *</label>
+                  <select
+                    value={editingProduct.category}
+                    onChange={e => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                    className="form-select"
+                  >
+                    {categories.map(c => (
+                      <option key={c.id} value={c.slug}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">Price ({currency}) *</label>
+                    <input
+                      type="number"
+                      value={editingProduct.price}
+                      onChange={e => setEditingProduct({ ...editingProduct, price: e.target.value })}
+                      className="form-input"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Original Price</label>
+                    <input
+                      type="number"
+                      value={editingProduct.originalPrice}
+                      onChange={e => setEditingProduct({ ...editingProduct, originalPrice: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Stock Quantity</label>
+                    <input
+                      type="number"
+                      value={editingProduct.stock}
+                      onChange={e => setEditingProduct({ ...editingProduct, stock: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Handcrafted Materials & Specs</label>
+                  <input
+                    type="text"
+                    value={editingProduct.materials}
+                    onChange={e => setEditingProduct({ ...editingProduct, materials: e.target.value })}
+                    className="form-input"
+                  />
+                </div>
+
+                {/* 3 Separate Product Pictures */}
+                <div style={{ background: '#faf8f5', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid #e7e2db', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1c1917', margin: 0 }}>
+                      📸 3 Product Pictures (Front, Side & Craft Details)
+                    </label>
+                    <span style={{ fontSize: '0.75rem', color: '#e26d21', fontWeight: 600 }}>
+                      Multi-Angle Gallery
+                    </span>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '0.65rem' }}>
+                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 1: Front / Primary View *</label>
+                    <input
+                      type="text"
+                      value={editingProduct.image1}
+                      onChange={e => setEditingProduct({ ...editingProduct, image1: e.target.value })}
+                      className="form-input"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '0.65rem' }}>
+                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 2: Side / Profile Angle View</label>
+                    <input
+                      type="text"
+                      value={editingProduct.image2}
+                      onChange={e => setEditingProduct({ ...editingProduct, image2: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '0.2rem' }}>
+                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 3: Craft / Macro Texture View</label>
+                    <input
+                      type="text"
+                      value={editingProduct.image3}
+                      onChange={e => setEditingProduct({ ...editingProduct, image3: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Description</label>
+                  <textarea
+                    rows={3}
+                    value={editingProduct.description}
+                    onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })}
+                    className="form-textarea"
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem', marginTop: '1.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditProductModal(false)}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    Save Changes
                   </button>
                 </div>
               </form>

@@ -116,8 +116,8 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
             }}
             >
               <img
-                src="/terracotta-lotus-choker.jpg"
-                alt="Terracotta Lotus Choker Set"
+                src={featuredProduct?.image || "/terracotta-lotus-choker.jpg"}
+                alt={featuredProduct?.title || "Terracotta Lotus Choker Set"}
                 style={{
                   width: '100%',
                   height: '380px',
@@ -166,13 +166,24 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
                 alignItems: 'center',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.06)'
               }}>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: '#78716c' }}>Artisan Heritage Collection</div>
-                  <strong style={{ fontSize: '0.92rem', color: '#1c1917' }}>Terracotta Lotus Choker Set</strong>
+                <div style={{ maxWidth: '65%' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#78716c', textTransform: 'capitalize' }}>
+                    {featuredProduct?.category ? featuredProduct.category.replace(/-/g, ' ') : 'Artisan Heritage Collection'}
+                  </div>
+                  <strong style={{
+                    fontSize: '0.92rem',
+                    color: '#1c1917',
+                    display: 'block',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {featuredProduct?.title || 'Terracotta Lotus Choker Set'}
+                  </strong>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span className="badge" style={{ background: '#e26d21', color: '#ffffff', fontWeight: 700 }}>
-                    ৳ 1,450
+                    ৳ {featuredProduct?.price ? featuredProduct.price.toLocaleString() : '1,450'}
                   </span>
                   <span style={{ fontSize: '0.75rem', color: '#e26d21', fontWeight: 600 }}>View 3 Angles →</span>
                 </div>
