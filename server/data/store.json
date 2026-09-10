@@ -73,12 +73,15 @@
       ],
       "stock": 14,
       "rating": 4.9,
-      "image": "/terracotta-lotus-choker.jpg",
+      "image": "/uploads/item-1789046288303-w6s1x.jpg",
       "images": [
-        "/terracotta-lotus-choker.jpg",
-        "/terracotta-choker-macro.jpg",
-        "/terracotta-jhumkas-detail.jpg"
-      ]
+        "/uploads/item-1789046288303-w6s1x.jpg",
+        "/uploads/item-1789046301409-io1st.jpg",
+        "/uploads/item-1789046334169-pzief.jpg"
+      ],
+      "image1": "/uploads/item-1789046288303-w6s1x.jpg",
+      "image2": "/uploads/item-1789046301409-io1st.jpg",
+      "image3": "/uploads/item-1789046334169-pzief.jpg"
     },
     {
       "id": "p-102",
