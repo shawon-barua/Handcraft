@@ -401,7 +401,7 @@ export default function App() {
         title="Chat on WhatsApp"
       >
         <MessageSquare size={18} />
-        <span>Chat & Negotiate</span>
+        <span>Chat with Us</span>
       </a>
 
       {/* Footer (Aarong Signature Dark Charcoal Base with Orange Accents) */}
