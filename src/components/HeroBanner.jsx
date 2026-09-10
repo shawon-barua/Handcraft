@@ -37,7 +37,7 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
                 color: '#e26d21',
                 fontWeight: 700
               }}>
-                woven with traditional & elegance
+                woven with tradition & elegance
               </span>
             </h1>
 
