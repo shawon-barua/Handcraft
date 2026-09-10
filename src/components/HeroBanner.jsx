@@ -48,7 +48,7 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
               maxWidth: '520px',
               lineHeight: 1.65
             }}>
-              Inspired by Bangladesh's rich artisan craftsmanship. Explore organic baked terracotta, resham silk thread necklaces, melodious silver payals, and rustic men's cuffs. Inspect <strong>3 separate high-definition photos</strong> for every item and negotiate directly via WhatsApp.
+              Inspired by Bangladesh's rich artisan craftsmanship. Explore organic baked terracotta, resham silk thread necklaces, melodious silver payals, and rustic men's cuffs. Inspect every item and talk with us by WhatsApp.
             </p>
 
             {/* CTAs */}
