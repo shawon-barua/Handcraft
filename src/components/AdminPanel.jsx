@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, ShoppingBag, FolderTree, Package, Settings, 
   DollarSign, TrendingUp, Clock, CheckCircle2, MessageSquare, 
-  Edit3, Trash2, Plus, Save, Search, Filter, ExternalLink, Sparkles, RefreshCw, AlertCircle
+  Edit3, Trash2, Plus, Save, Search, Filter, ExternalLink, Sparkles, RefreshCw, AlertCircle,
+  Upload, Image as ImageIcon, Check
 } from 'lucide-react';
 
 export default function AdminPanel({
@@ -48,6 +49,7 @@ export default function AdminPanel({
 
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [uploadingKey, setUploadingKey] = useState(null);
 
   const [settingsSaved, setSettingsSaved] = useState(false);
 
@@ -286,6 +288,49 @@ export default function AdminPanel({
       }
     } catch (err) {
       console.error('Failed to update product:', err);
+    }
+  };
+
+  // Handle direct image file upload to server
+  const handleUploadImageFile = async (file, target, fieldName) => {
+    if (!file) return;
+    const key = `${target}-${fieldName}`;
+    setUploadingKey(key);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const base64Data = event.target.result;
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              image: base64Data,
+              filename: file.name
+            })
+          });
+          const data = await res.json();
+          if (data.url) {
+            if (target === 'new') {
+              setNewProduct(prev => ({ ...prev, [fieldName]: data.url }));
+            } else if (target === 'edit') {
+              setEditingProduct(prev => ({ ...prev, [fieldName]: data.url }));
+            }
+          } else {
+            alert('Upload failed: ' + (data.error || 'Unknown error'));
+          }
+        } catch (err) {
+          console.error('Error uploading file:', err);
+          alert('Upload failed: ' + err.message);
+        } finally {
+          setUploadingKey(null);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('FileReader error:', err);
+      setUploadingKey(null);
     }
   };
 
@@ -1208,47 +1253,46 @@ export default function AdminPanel({
                 {/* 3 Separate Product Pictures */}
                 <div style={{ background: '#faf8f5', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid #e7e2db', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1c1917', margin: 0 }}>
-                      📸 3 Product Pictures (Front, Side & Craft Details)
-                    </label>
+                    <div>
+                      <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1c1917', margin: 0 }}>
+                        📸 3 Product Pictures (Front, Side & Craft Details)
+                      </label>
+                      <div style={{ fontSize: '0.75rem', color: '#78716c' }}>
+                        Upload files directly from your computer or phone, or paste URLs.
+                      </div>
+                    </div>
                     <span style={{ fontSize: '0.75rem', color: '#e26d21', fontWeight: 600 }}>
-                      Multi-Angle Gallery
+                      Multi-Angle Showcase
                     </span>
                   </div>
 
-                  <div className="form-group" style={{ marginBottom: '0.65rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 1: Front / Primary View *</label>
-                    <input
-                      type="url"
-                      placeholder="https://images.unsplash.com/... (Main Showcase)"
-                      value={newProduct.image1}
-                      onChange={e => setNewProduct({ ...newProduct, image1: e.target.value })}
-                      className="form-input"
-                      required
-                    />
-                  </div>
+                  <ImageUploadSlot
+                    label="Picture 1: Front / Primary View"
+                    helperText="Main catalog thumbnail"
+                    value={newProduct.image1}
+                    onChange={(val) => setNewProduct({ ...newProduct, image1: val })}
+                    onUpload={(file) => handleUploadImageFile(file, 'new', 'image1')}
+                    isUploading={uploadingKey === 'new-image1'}
+                    required={true}
+                  />
 
-                  <div className="form-group" style={{ marginBottom: '0.65rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 2: Side / Profile Angle View</label>
-                    <input
-                      type="url"
-                      placeholder="https://images.unsplash.com/... (Side view)"
-                      value={newProduct.image2}
-                      onChange={e => setNewProduct({ ...newProduct, image2: e.target.value })}
-                      className="form-input"
-                    />
-                  </div>
+                  <ImageUploadSlot
+                    label="Picture 2: Side / Profile Angle View"
+                    helperText="Shows depth & wearing profile"
+                    value={newProduct.image2}
+                    onChange={(val) => setNewProduct({ ...newProduct, image2: val })}
+                    onUpload={(file) => handleUploadImageFile(file, 'new', 'image2')}
+                    isUploading={uploadingKey === 'new-image2'}
+                  />
 
-                  <div className="form-group" style={{ marginBottom: '0.2rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 3: Craft / Macro Texture View</label>
-                    <input
-                      type="url"
-                      placeholder="https://images.unsplash.com/... (Detail / Craft view)"
-                      value={newProduct.image3}
-                      onChange={e => setNewProduct({ ...newProduct, image3: e.target.value })}
-                      className="form-input"
-                    />
-                  </div>
+                  <ImageUploadSlot
+                    label="Picture 3: Craft / Macro Texture View"
+                    helperText="Close-up detail of clay or embroidery"
+                    value={newProduct.image3}
+                    onChange={(val) => setNewProduct({ ...newProduct, image3: val })}
+                    onUpload={(file) => handleUploadImageFile(file, 'new', 'image3')}
+                    isUploading={uploadingKey === 'new-image3'}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -1358,44 +1402,46 @@ export default function AdminPanel({
                 {/* 3 Separate Product Pictures */}
                 <div style={{ background: '#faf8f5', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid #e7e2db', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1c1917', margin: 0 }}>
-                      📸 3 Product Pictures (Front, Side & Craft Details)
-                    </label>
+                    <div>
+                      <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1c1917', margin: 0 }}>
+                        📸 3 Product Pictures (Front, Side & Craft Details)
+                      </label>
+                      <div style={{ fontSize: '0.75rem', color: '#78716c' }}>
+                        Upload new photos from your computer or phone to replace existing ones.
+                      </div>
+                    </div>
                     <span style={{ fontSize: '0.75rem', color: '#e26d21', fontWeight: 600 }}>
-                      Multi-Angle Gallery
+                      Multi-Angle Showcase
                     </span>
                   </div>
 
-                  <div className="form-group" style={{ marginBottom: '0.65rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 1: Front / Primary View *</label>
-                    <input
-                      type="text"
-                      value={editingProduct.image1}
-                      onChange={e => setEditingProduct({ ...editingProduct, image1: e.target.value })}
-                      className="form-input"
-                      required
-                    />
-                  </div>
+                  <ImageUploadSlot
+                    label="Picture 1: Front / Primary View"
+                    helperText="Main catalog thumbnail"
+                    value={editingProduct.image1}
+                    onChange={(val) => setEditingProduct({ ...editingProduct, image1: val })}
+                    onUpload={(file) => handleUploadImageFile(file, 'edit', 'image1')}
+                    isUploading={uploadingKey === 'edit-image1'}
+                    required={true}
+                  />
 
-                  <div className="form-group" style={{ marginBottom: '0.65rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 2: Side / Profile Angle View</label>
-                    <input
-                      type="text"
-                      value={editingProduct.image2}
-                      onChange={e => setEditingProduct({ ...editingProduct, image2: e.target.value })}
-                      className="form-input"
-                    />
-                  </div>
+                  <ImageUploadSlot
+                    label="Picture 2: Side / Profile Angle View"
+                    helperText="Shows depth & wearing profile"
+                    value={editingProduct.image2}
+                    onChange={(val) => setEditingProduct({ ...editingProduct, image2: val })}
+                    onUpload={(file) => handleUploadImageFile(file, 'edit', 'image2')}
+                    isUploading={uploadingKey === 'edit-image2'}
+                  />
 
-                  <div className="form-group" style={{ marginBottom: '0.2rem' }}>
-                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Picture 3: Craft / Macro Texture View</label>
-                    <input
-                      type="text"
-                      value={editingProduct.image3}
-                      onChange={e => setEditingProduct({ ...editingProduct, image3: e.target.value })}
-                      className="form-input"
-                    />
-                  </div>
+                  <ImageUploadSlot
+                    label="Picture 3: Craft / Macro Texture View"
+                    helperText="Close-up detail of clay or embroidery"
+                    value={editingProduct.image3}
+                    onChange={(val) => setEditingProduct({ ...editingProduct, image3: val })}
+                    onUpload={(file) => handleUploadImageFile(file, 'edit', 'image3')}
+                    isUploading={uploadingKey === 'edit-image3'}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -1424,6 +1470,122 @@ export default function AdminPanel({
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ImageUploadSlot({
+  label,
+  value,
+  onChange,
+  onUpload,
+  isUploading,
+  required = false,
+  helperText
+}) {
+  return (
+    <div style={{
+      background: '#ffffff',
+      border: '1px solid #e7e2db',
+      borderRadius: 'var(--radius-sm)',
+      padding: '0.75rem',
+      marginBottom: '0.75rem'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1c1917' }}>
+          {label} {required && <span style={{ color: '#dc2626' }}>*</span>}
+        </span>
+        {helperText && (
+          <span style={{ fontSize: '0.72rem', color: '#78716c' }}>{helperText}</span>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+        {/* Visual Thumbnail Preview */}
+        <div style={{
+          width: '60px',
+          height: '60px',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px solid #e2dcd5',
+          background: '#f8f6f2',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          flexShrink: 0
+        }}>
+          {value ? (
+            <img
+              src={value}
+              alt="Preview"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          ) : (
+            <ImageIcon size={22} color="#a8a29e" />
+          )}
+        </div>
+
+        {/* Upload Action & URL Input */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <label
+              className="btn btn-secondary btn-sm"
+              style={{
+                cursor: isUploading ? 'not-allowed' : 'pointer',
+                fontSize: '0.8rem',
+                padding: '0.35rem 0.75rem',
+                background: '#fef3c7',
+                borderColor: '#fde68a',
+                color: '#92400e',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}
+            >
+              {isUploading ? (
+                <>
+                  <RefreshCw size={13} className="spin" /> Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload size={13} /> Upload Image File
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                disabled={isUploading}
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    onUpload(e.target.files[0]);
+                  }
+                }}
+              />
+            </label>
+
+            {value && (
+              <span style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                <Check size={13} /> Image attached
+              </span>
+            )}
+          </div>
+
+          <input
+            type="text"
+            placeholder="Or enter image URL (e.g. /uploads/image.jpg or https://...)"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="form-input"
+            style={{ fontSize: '0.78rem', padding: '0.35rem 0.6rem' }}
+            required={required}
+          />
+        </div>
       </div>
     </div>
   );

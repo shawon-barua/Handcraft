@@ -11,11 +11,57 @@ const app = express();
 const PORT = process.env.PORT || 5005;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const DATA_DIR = path.join(__dirname, 'data');
 const STORE_FILE = path.join(DATA_DIR, 'store.json');
 const INITIAL_FILE = path.join(DATA_DIR, 'initialData.json');
+
+const UPLOADS_DIR = path.join(__dirname, '../public/uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Image Upload Endpoint (Base64 file upload)
+app.post('/api/upload', (req, res) => {
+  try {
+    const { image, filename } = req.body;
+    if (!image) {
+      return res.status(400).json({ error: 'No image data provided' });
+    }
+
+    const matches = image.match(/^data:([A-Za-z0-9-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ error: 'Invalid base64 image data' });
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    let ext = '.jpg';
+    if (mimeType.includes('png')) ext = '.png';
+    else if (mimeType.includes('webp')) ext = '.webp';
+    else if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = '.jpg';
+    else if (filename) {
+      const originalExt = path.extname(filename);
+      if (originalExt) ext = originalExt;
+    }
+
+    const safeName = `item-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
+    const filePath = path.join(UPLOADS_DIR, safeName);
+
+    fs.writeFileSync(filePath, buffer);
+    const publicUrl = `/uploads/${safeName}`;
+
+    res.json({ success: true, url: publicUrl, filename: safeName });
+  } catch (err) {
+    console.error('Upload error:', err);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
 
 // Initialize store if not present
 function loadStore() {
