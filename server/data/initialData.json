@@ -3,7 +3,7 @@
     "storeName": "Falguni Handcraft",
     "logo": "/logo.png",
     "tagline": "Handcrafted jewellery woven with tradition & elegance",
-    "whatsappNumber": "8801712345678",
+    "whatsappNumber": "8801855636389",
     "email": "falgunihandcraft@gmail.com",
     "currency": "৳",
     "announcement": "✨ Handcrafted with love: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order in your favorite colors and designs."
@@ -275,7 +275,7 @@
       "id": "ORD-1875",
       "orderDate": "2026-09-10T04:32:12.451Z",
       "channel": "email",
-      "status": "In Negotiation",
+      "status": "Active Negotiation",
       "customer": {
         "name": "Shawon Barua",
         "phone": "01911053670",
@@ -306,7 +306,7 @@
       "id": "ORD-1001",
       "orderDate": "2026-09-08T14:32:00.000Z",
       "channel": "whatsapp",
-      "status": "In Negotiation",
+      "status": "Active Negotiation",
       "customer": {
         "name": "Nusrat Jahan",
         "phone": "+8801819234567",
@@ -335,7 +335,7 @@
       "id": "ORD-1002",
       "orderDate": "2026-09-09T18:15:00.000Z",
       "channel": "email",
-      "status": "Confirmed",
+      "status": "Confirmed Sales",
       "customer": {
         "name": "Tanvir Ahmed",
         "phone": "+8801711998877",

@@ -36,12 +36,12 @@ export default function Navbar({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', fontSize: '0.8rem' }}>
           <a 
-            href={`https://wa.me/${settings?.whatsappNumber || '8801712345678'}`}
+            href={`https://wa.me/${(settings?.whatsappNumber || '8801855636389').replace(/[^0-9]/g, '').replace(/^0/, '880')}`}
             target="_blank" 
             rel="noopener noreferrer"
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: '#fed7aa', fontWeight: 600 }}
           >
-            <MessageSquare size={13} color="#25d366" /> WhatsApp: +{settings?.whatsappNumber || '8801712345678'}
+            <MessageSquare size={13} color="#25d366" /> WhatsApp: +{(settings?.whatsappNumber || '8801855636389').replace(/[^0-9]/g, '').replace(/^0/, '880')}
           </a>
         </div>
       </div>

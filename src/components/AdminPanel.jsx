@@ -3,7 +3,7 @@ import {
   LayoutDashboard, ShoppingBag, FolderTree, Package, Settings, 
   DollarSign, TrendingUp, Clock, CheckCircle2, MessageSquare, 
   Edit3, Trash2, Plus, Save, Search, Filter, ExternalLink, Sparkles, RefreshCw, AlertCircle,
-  Upload, Image as ImageIcon, Check
+  Upload, Image as ImageIcon, Check, X, ArrowRight, ArrowDown, XCircle, ChevronRight, Phone, MapPin, Eye
 } from 'lucide-react';
 
 export default function AdminPanel({
@@ -18,6 +18,7 @@ export default function AdminPanel({
   const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState(initialSettings || {});
   const [isLoading, setIsLoading] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
   // Filter & Search states
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
@@ -117,6 +118,7 @@ export default function AdminPanel({
 
   // Handle Order Status change
   const handleStatusChange = async (orderId, newStatus) => {
+    setUpdatingOrderId(orderId);
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
@@ -135,6 +137,8 @@ export default function AdminPanel({
       }
     } catch (err) {
       console.error('Failed to update order status:', err);
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -355,7 +359,14 @@ export default function AdminPanel({
 
   // Filtered orders
   const filteredOrders = orders.filter(o => {
-    const matchesStatus = orderStatusFilter === 'all' || o.status === orderStatusFilter;
+    let matchesStatus = true;
+    if (orderStatusFilter === 'Confirmed Sales' || orderStatusFilter === 'Confirmed') {
+      matchesStatus = o.status === 'Confirmed' || o.status === 'Confirmed Sales';
+    } else if (orderStatusFilter === 'Active Negotiation' || orderStatusFilter === 'In Negotiation') {
+      matchesStatus = o.status === 'In Negotiation' || o.status === 'Active Negotiation';
+    } else if (orderStatusFilter !== 'all') {
+      matchesStatus = o.status === orderStatusFilter;
+    }
     const q = orderSearch.toLowerCase();
     const matchesSearch = !orderSearch || 
       o.id.toLowerCase().includes(q) ||
@@ -456,8 +467,33 @@ export default function AdminPanel({
               gap: '1.25rem',
               marginBottom: '2rem'
             }}>
-              {/* Total Orders */}
-              <div className="glass-panel" style={{ padding: '1.35rem', borderRadius: 'var(--radius-md)', background: '#ffffff', border: '1px solid #e7e2db' }}>
+              {/* Total Orders - Card (Scrolls to Inquiries section below) */}
+              <div
+                onClick={() => {
+                  document.getElementById('customer-inquiries-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="glass-panel"
+                style={{
+                  padding: '1.35rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: '#ffffff',
+                  border: '1px solid #e7e2db',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  position: 'relative'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = '#e26d21';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(226, 109, 33, 0.15)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = '#e7e2db';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                }}
+                title="View Customer Inquiries & Order Actions below"
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#78716c', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Total Inquiries / Orders</span>
                   <ShoppingBag size={18} color="#e26d21" />
@@ -465,13 +501,50 @@ export default function AdminPanel({
                 <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#1c1917' }}>
                   {stats?.totalOrders ?? 0}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#15803d', marginTop: '0.3rem', fontWeight: 500 }}>
-                  Via WhatsApp & Email checkout
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem' }}>
+                  <span style={{ fontSize: '0.78rem', color: '#15803d', fontWeight: 500 }}>
+                    Via WhatsApp & Email
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: '#e26d21',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.2rem'
+                  }}>
+                    Actions Below <ArrowDown size={13} />
+                  </span>
                 </div>
               </div>
 
-              {/* Total Sales */}
-              <div className="glass-panel" style={{ padding: '1.35rem', borderRadius: 'var(--radius-md)', background: '#ffffff', border: '1px solid #e7e2db' }}>
+              {/* Total Sales - Card (Navigates to Orders tab with Confirmed Sales filter) */}
+              <div
+                onClick={() => {
+                  setOrderStatusFilter('Confirmed Sales');
+                  setActiveTab('orders');
+                }}
+                className="glass-panel"
+                style={{
+                  padding: '1.35rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: '#ffffff',
+                  border: '1px solid #e7e2db',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = '#15803d';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(21, 128, 61, 0.15)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = '#e7e2db';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                }}
+                title="Manage confirmed sales in Customer Orders tab"
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#78716c', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Total Confirmed Sales</span>
                   <DollarSign size={18} color="#15803d" />
@@ -479,13 +552,50 @@ export default function AdminPanel({
                 <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#c0520d' }}>
                   {currency} {(stats?.totalSale ?? 0).toLocaleString()}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#78716c', marginTop: '0.3rem' }}>
-                  Negotiated / Confirmed orders
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem' }}>
+                  <span style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                    {orders.filter(o => o.status === 'Confirmed' || o.status === 'Confirmed Sales').length} Confirmed
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: '#15803d',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.2rem'
+                  }}>
+                    Manage Orders <ArrowRight size={13} />
+                  </span>
                 </div>
               </div>
 
-              {/* In Negotiation */}
-              <div className="glass-panel" style={{ padding: '1.35rem', borderRadius: 'var(--radius-md)', background: '#ffffff', border: '1px solid #e7e2db' }}>
+              {/* In Negotiation - Card (Navigates to Orders tab with Active Negotiation filter) */}
+              <div
+                onClick={() => {
+                  setOrderStatusFilter('Active Negotiation');
+                  setActiveTab('orders');
+                }}
+                className="glass-panel"
+                style={{
+                  padding: '1.35rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: '#ffffff',
+                  border: '1px solid #e7e2db',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = '#2563eb';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(37, 99, 235, 0.15)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = '#e7e2db';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                }}
+                title="Review active negotiations in Customer Orders tab"
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#78716c', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>In Active Negotiation</span>
                   <MessageSquare size={18} color="#2563eb" />
@@ -493,13 +603,46 @@ export default function AdminPanel({
                 <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#2563eb' }}>
                   {stats?.inNegotiationCount ?? 0}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#78716c', marginTop: '0.3rem' }}>
-                  Potential: {currency} {(stats?.potentialNegotiationSale ?? 0).toLocaleString()}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem' }}>
+                  <span style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                    Potential: {currency} {(stats?.potentialNegotiationSale ?? 0).toLocaleString()}
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: '#2563eb',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.2rem'
+                  }}>
+                    Review Orders <ArrowRight size={13} />
+                  </span>
                 </div>
               </div>
 
               {/* Active Products */}
-              <div className="glass-panel" style={{ padding: '1.35rem', borderRadius: 'var(--radius-md)', background: '#ffffff', border: '1px solid #e7e2db' }}>
+              <div
+                onClick={() => setActiveTab('products')}
+                className="glass-panel"
+                style={{
+                  padding: '1.35rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: '#ffffff',
+                  border: '1px solid #e7e2db',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = '#7c3aed';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(124, 58, 237, 0.15)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = '#e7e2db';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#78716c', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Catalog Inventory</span>
                   <Package size={18} color="#7c3aed" />
@@ -507,15 +650,351 @@ export default function AdminPanel({
                 <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#1c1917' }}>
                   {stats?.totalProducts ?? 0}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#78716c', marginTop: '0.3rem' }}>
-                  Across {stats?.totalCategories ?? 0} artisan categories
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem' }}>
+                  <span style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                    Across {stats?.totalCategories ?? 0} artisan categories
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: '#7c3aed',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.2rem'
+                  }}>
+                    Inventory <ArrowRight size={13} />
+                  </span>
                 </div>
               </div>
             </div>
 
+            {/* Quick Inquiries / Orders Management Section on Dashboard */}
+            <div id="customer-inquiries-section" className="glass-panel" style={{
+              padding: '1.5rem',
+              borderRadius: 'var(--radius-md)',
+              background: '#ffffff',
+              border: '1px solid #e7e2db',
+              marginBottom: '2rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1.2rem',
+                flexWrap: 'wrap',
+                gap: '0.8rem'
+              }}>
+                <div>
+                  <h2 style={{ fontSize: '1.25rem', color: '#1c1917', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ShoppingBag size={20} color="#e26d21" /> Customer Inquiries & Order Actions
+                  </h2>
+                  <p style={{ fontSize: '0.82rem', color: '#78716c', marginTop: '0.2rem' }}>
+                    Click status buttons below to immediately confirm sales, continue active negotiation, or cancel inquiries.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <button
+                    onClick={() => setActiveTab('orders')}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '0.82rem', padding: '0.45rem 0.9rem' }}
+                  >
+                    Customer Orders Tab ({orders.length}) <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Inquiries / Orders List */}
+              {orders.length === 0 ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#78716c' }}>
+                  <ShoppingBag size={36} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
+                  <p>No customer inquiries or orders received yet.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {orders.map(order => {
+                    const customerWhatsApp = order.customer?.phone?.replace(/[^0-9]/g, '');
+                    const waChatUrl = `https://wa.me/${customerWhatsApp}?text=${encodeURIComponent(`Hello ${order.customer?.name}! This is ${settings?.storeName || 'Falguni Handcraft'} regarding your order #${order.id}.`)}`;
+                    const isUpdating = updatingOrderId === order.id;
+
+                    return (
+                      <div
+                        key={order.id}
+                        style={{
+                          padding: '1.15rem 1.25rem',
+                          borderRadius: 'var(--radius-sm)',
+                          border: '1px solid #e7e2db',
+                          background: '#faf8f5',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.85rem'
+                        }}
+                      >
+                        {/* Order Header */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '0.6rem'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.98rem', color: '#1c1917' }}>
+                              #{order.id}
+                            </span>
+                            <span style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                              {new Date(order.orderDate).toLocaleDateString()} at {new Date(order.orderDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <span className={`badge ${order.channel === 'whatsapp' ? 'badge-green' : 'badge-gold'}`} style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}>
+                              Via {order.channel?.toUpperCase()}
+                            </span>
+                          </div>
+
+                          {/* Status Badge */}
+                          <div>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              padding: '0.25rem 0.65rem',
+                              borderRadius: 'var(--radius-full)',
+                              fontSize: '0.76rem',
+                              fontWeight: 700,
+                              background: (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? '#dcfce7' :
+                                          (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? '#ffedd5' :
+                                          order.status === 'Cancelled' ? '#fee2e2' : '#f3f4f6',
+                              color: (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? '#15803d' :
+                                     (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? '#c0520d' :
+                                     order.status === 'Cancelled' ? '#dc2626' : '#4b5563',
+                              border: (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? '1px solid #bbf7d0' :
+                                      (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? '1px solid #fed7aa' :
+                                      order.status === 'Cancelled' ? '1px solid #fecaca' : '1px solid #e5e7eb'
+                            }}>
+                              {(order.status === 'Confirmed' || order.status === 'Confirmed Sales') && <CheckCircle2 size={12} />}
+                              {(order.status === 'In Negotiation' || order.status === 'Active Negotiation') && <MessageSquare size={12} />}
+                              {order.status === 'Cancelled' && <XCircle size={12} />}
+                              {(order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? 'Confirmed Sales' :
+                               (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? 'Active Negotiation' :
+                               order.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Order Details: Customer & Items */}
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                          gap: '1rem',
+                          background: '#ffffff',
+                          padding: '0.9rem 1rem',
+                          borderRadius: 'var(--radius-sm)',
+                          border: '1px solid #ede8e1'
+                        }}>
+                          {/* Customer */}
+                          <div>
+                            <div style={{ fontSize: '0.76rem', textTransform: 'uppercase', color: '#78716c', fontWeight: 700, marginBottom: '0.3rem' }}>
+                              Customer Information
+                            </div>
+                            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1c1917' }}>
+                              {order.customer?.name}
+                            </div>
+                            <div style={{ fontSize: '0.82rem', color: '#57534e', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span>{order.customer?.phone}</span>
+                              {customerWhatsApp && (
+                                <a
+                                  href={waChatUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.2rem',
+                                    color: '#15803d',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    textDecoration: 'none'
+                                  }}
+                                  title="Open WhatsApp chat"
+                                >
+                                  <MessageSquare size={11} /> WhatsApp
+                                </a>
+                              )}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#78716c', marginTop: '0.2rem' }}>
+                              {order.customer?.address}{order.customer?.city ? `, ${order.customer?.city}` : ''}
+                            </div>
+                            {order.customer?.notes && (
+                              <div style={{ fontSize: '0.76rem', color: '#c2410c', marginTop: '0.3rem', fontStyle: 'italic' }}>
+                                "{order.customer.notes}"
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Items Summary */}
+                          <div>
+                            <div style={{ fontSize: '0.76rem', textTransform: 'uppercase', color: '#78716c', fontWeight: 700, marginBottom: '0.3rem' }}>
+                              Ordered Items ({order.items?.length || 0})
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '70px', overflowY: 'auto' }}>
+                              {order.items?.map((item, i) => (
+                                <div key={i} style={{ fontSize: '0.82rem', display: 'flex', justifyContent: 'space-between', color: '#44403c' }}>
+                                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
+                                    {item.title} × {item.quantity || 1}
+                                  </span>
+                                  <span style={{ fontWeight: 600 }}>
+                                    {currency} {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{
+                              borderTop: '1px dashed #e7e2db',
+                              marginTop: '0.4rem',
+                              paddingTop: '0.3rem',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              fontWeight: 700,
+                              fontSize: '0.88rem',
+                              color: '#c0520d'
+                            }}>
+                              <span>Total Amount:</span>
+                              <span>{currency} {(Number(order.totalAmount) || 0).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons: Confirmed Sales, Active Negotiation, Cancelled */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          flexWrap: 'wrap',
+                          gap: '0.6rem',
+                          paddingTop: '0.2rem'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#57534e' }}>
+                              Mark Status:
+                            </span>
+
+                            {/* 1. Confirmed Sales */}
+                            <button
+                              onClick={() => handleStatusChange(order.id, 'Confirmed Sales')}
+                              disabled={isUpdating}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.35rem 0.75rem',
+                                borderRadius: 'var(--radius-sm)',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                cursor: isUpdating ? 'wait' : 'pointer',
+                                transition: 'all 0.18s ease',
+                                background: (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? '#15803d' : '#ffffff',
+                                color: (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? '#ffffff' : '#15803d',
+                                border: (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? '1px solid #15803d' : '1px solid #86efac',
+                                boxShadow: (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? '0 2px 6px rgba(21, 128, 61, 0.25)' : 'none'
+                              }}
+                            >
+                              <CheckCircle2 size={13} />
+                              Confirmed Sales
+                            </button>
+
+                            {/* 2. Active Negotiation */}
+                            <button
+                              onClick={() => handleStatusChange(order.id, 'Active Negotiation')}
+                              disabled={isUpdating}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.35rem 0.75rem',
+                                borderRadius: 'var(--radius-sm)',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                cursor: isUpdating ? 'wait' : 'pointer',
+                                transition: 'all 0.18s ease',
+                                background: (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? '#e26d21' : '#ffffff',
+                                color: (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? '#ffffff' : '#c0520d',
+                                border: (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? '1px solid #e26d21' : '1px solid #fed7aa',
+                                boxShadow: (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? '0 2px 6px rgba(226, 109, 33, 0.25)' : 'none'
+                              }}
+                            >
+                              <MessageSquare size={13} />
+                              Active Negotiation
+                            </button>
+
+                            {/* 3. Cancelled */}
+                            <button
+                              onClick={() => handleStatusChange(order.id, 'Cancelled')}
+                              disabled={isUpdating}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.35rem 0.75rem',
+                                borderRadius: 'var(--radius-sm)',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                cursor: isUpdating ? 'wait' : 'pointer',
+                                transition: 'all 0.18s ease',
+                                background: order.status === 'Cancelled' ? '#dc2626' : '#ffffff',
+                                color: order.status === 'Cancelled' ? '#ffffff' : '#dc2626',
+                                border: order.status === 'Cancelled' ? '1px solid #dc2626' : '1px solid #fecaca',
+                                boxShadow: order.status === 'Cancelled' ? '0 2px 6px rgba(220, 38, 38, 0.25)' : 'none'
+                              }}
+                            >
+                              <XCircle size={13} />
+                              Cancelled
+                            </button>
+                          </div>
+
+                          {/* Extra Status Select */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <span style={{ fontSize: '0.74rem', color: '#78716c' }}>Lifecycle:</span>
+                            <select
+                              value={
+                                (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? 'Confirmed Sales' :
+                                (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? 'Active Negotiation' :
+                                order.status === 'Cancelled' ? 'Cancelled' : 'Active Negotiation'
+                              }
+                              onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                              disabled={isUpdating}
+                              style={{
+                                padding: '0.3rem 0.6rem',
+                                borderRadius: 'var(--radius-sm)',
+                                background: '#ffffff',
+                                border: '1px solid #d6d0c7',
+                                color: '#44403c',
+                                fontSize: '0.78rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <option value="Active Negotiation">Active Negotiation</option>
+                              <option value="Confirmed Sales">Confirmed Sales</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                            {isUpdating && <RefreshCw size={13} className="spin" color="#e26d21" />}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* Category Performance Breakdown */}
-            <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-main)' }}>
+            <div className="glass-panel" style={{
+              padding: '1.5rem',
+              borderRadius: 'var(--radius-md)',
+              background: '#ffffff',
+              border: '1px solid #e7e2db',
+              marginBottom: '2rem'
+            }}>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: '#1c1917' }}>
                 Category Distribution & Catalog Breakdown
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
@@ -523,18 +1002,18 @@ export default function AdminPanel({
                   <div
                     key={i}
                     style={{
-                      background: 'rgba(0,0,0,0.25)',
+                      background: '#faf8f5',
                       padding: '1rem',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid rgba(255,255,255,0.06)'
+                      border: '1px solid #e7e2db'
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                      <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{cat.name}</strong>
-                      <span className="badge badge-clay">{cat.productCount} Items</span>
+                      <strong style={{ color: '#1c1917', fontSize: '0.95rem' }}>{cat.name}</strong>
+                      <span className="badge badge-gold">{cat.productCount} Items</span>
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      Total items ordered: <span style={{ color: '#fcd34d', fontWeight: 600 }}>{cat.ordersItemCount}</span>
+                    <div style={{ fontSize: '0.8rem', color: '#78716c' }}>
+                      Total items ordered: <span style={{ color: '#c0520d', fontWeight: 600 }}>{cat.ordersItemCount}</span>
                     </div>
                   </div>
                 ))}
@@ -559,7 +1038,7 @@ export default function AdminPanel({
             }}>
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Filter Status:</span>
-                {['all', 'In Negotiation', 'Confirmed', 'In Crafting', 'Shipped', 'Delivered', 'Cancelled'].map(status => (
+                {['all', 'Active Negotiation', 'Confirmed Sales', 'Cancelled'].map(status => (
                   <button
                     key={status}
                     onClick={() => setOrderStatusFilter(status)}
@@ -602,7 +1081,7 @@ export default function AdminPanel({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {filteredOrders.map(order => {
                   const customerWhatsApp = order.customer?.phone?.replace(/[^0-9]/g, '');
-                  const waChatUrl = `https://wa.me/${customerWhatsApp}?text=${encodeURIComponent(`Salam ${order.customer?.name}! This is ${settings?.storeName || 'Falguni Handcraft'} regarding your order #${order.id}.`)}`;
+                  const waChatUrl = `https://wa.me/${customerWhatsApp}?text=${encodeURIComponent(`Hello ${order.customer?.name}! This is ${settings?.storeName || 'Falguni Handcraft'} regarding your order #${order.id}.`)}`;
 
                   return (
                     <div
@@ -613,9 +1092,9 @@ export default function AdminPanel({
                         border: '1px solid #e7e2db',
                         boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
                         borderRadius: 'var(--radius-md)',
-                        borderLeft: order.status === 'Confirmed' ? '4px solid #15803d' :
-                                    order.status === 'In Negotiation' ? '4px solid #e26d21' :
-                                    order.status === 'Delivered' ? '4px solid #16a34a' : '4px solid #3b82f6'
+                        borderLeft: (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? '4px solid #15803d' :
+                                    (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? '4px solid #e26d21' :
+                                    '4px solid #dc2626'
                       }}
                     >
                       {/* Top Row: Ref ID, Status, Channel, Date */}
@@ -645,7 +1124,11 @@ export default function AdminPanel({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                           <span style={{ fontSize: '0.8rem', color: '#78716c', fontWeight: 600 }}>Order Status:</span>
                           <select
-                            value={order.status}
+                            value={
+                              (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? 'Confirmed Sales' :
+                              (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? 'Active Negotiation' :
+                              order.status === 'Cancelled' ? 'Cancelled' : 'Active Negotiation'
+                            }
                             onChange={(e) => handleStatusChange(order.id, e.target.value)}
                             style={{
                               padding: '0.4rem 0.8rem',
@@ -657,12 +1140,8 @@ export default function AdminPanel({
                               fontSize: '0.85rem'
                             }}
                           >
-                            <option value="Pending Review">Pending Review</option>
-                            <option value="In Negotiation">In Negotiation</option>
-                            <option value="Confirmed">Confirmed</option>
-                            <option value="In Crafting">In Crafting</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Delivered">Delivered</option>
+                            <option value="Active Negotiation">Active Negotiation</option>
+                            <option value="Confirmed Sales">Confirmed Sales</option>
                             <option value="Cancelled">Cancelled</option>
                           </select>
                         </div>
@@ -1057,7 +1536,7 @@ export default function AdminPanel({
                 <label className="form-label">Store Owner WhatsApp Number (Country code without '+')</label>
                 <input
                   type="text"
-                  placeholder="e.g. 8801712345678"
+                  placeholder="e.g. 8801855636389"
                   value={settings.whatsappNumber || ''}
                   onChange={e => setSettings({ ...settings, whatsappNumber: e.target.value })}
                   className="form-input"

@@ -64,10 +64,10 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
     }
   };
 
-  const whatsappNumber = settings?.whatsappNumber || '8801712345678';
+  const whatsappNumber = (settings?.whatsappNumber || '8801855636389').replace(/[^0-9]/g, '').replace(/^0/, '880');
   const getWhatsAppLink = () => {
     const text = encodeURIComponent(
-      `Salam Falguni Handcraft! I am interested in ordering this handcrafted item:\n\n` +
+      `Hello Falguni Handcraft! I am interested in ordering this handcrafted item:\n\n` +
       `*Product:* ${product.title}\n` +
       `*Price:* ৳${product.price.toLocaleString()} BDT\n` +
       `*Quantity:* ${quantity}\n` +
@@ -81,7 +81,7 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
     const email = settings?.email || 'falgunihandcraft@gmail.com';
     const subject = encodeURIComponent(`Order Inquiry: ${product.title}`);
     const body = encodeURIComponent(
-      `Salam Falguni Handcraft,\n\nI want to inquire about purchasing:\n\n` +
+      `Hello Falguni Handcraft,\n\nI want to inquire about purchasing:\n\n` +
       `Product: ${product.title}\n` +
       `Price: ৳${product.price} BDT\n` +
       `Quantity: ${quantity}\n\n` +

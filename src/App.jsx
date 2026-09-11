@@ -17,11 +17,13 @@ export default function App() {
   const [settings, setSettings] = useState({
     storeName: 'Falguni Handcraft',
     logo: '/logo.png',
-    whatsappNumber: '8801712345678',
+    whatsappNumber: '8801855636389',
     email: 'falgunihandcraft@gmail.com',
     currency: '৳',
     announcement: '✨ Exquisitely handcrafted: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order.'
   });
+
+  const cleanWaNumber = (num) => (num ? String(num).replace(/[^0-9]/g, '').replace(/^0/, '880') : '8801855636389');
 
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -220,6 +222,7 @@ export default function App() {
             onScrollToProducts={scrollToProducts}
             featuredProduct={products.find(p => p.id === 'p-101') || products[0]}
             onSelectProduct={setSelectedProductForDetail}
+            settings={settings}
           />
 
           {/* Product Gallery Showcase */}
@@ -390,7 +393,7 @@ export default function App() {
 
       {/* Floating WhatsApp Button (Bottom Right) */}
       <a
-        href={`https://wa.me/${settings?.whatsappNumber || '8801712345678'}?text=${encodeURIComponent("Salam Falguni Handcraft! I'm browsing your handcrafted jewelry store and would like to ask a question.")}`}
+        href={`https://wa.me/${cleanWaNumber(settings?.whatsappNumber)}?text=${encodeURIComponent("Hello Falguni Handcraft! I'm browsing your handcrafted jewelry store and would like to ask a question.")}`}
         target="_blank"
         rel="noopener noreferrer"
         className="floating-whatsapp"
@@ -442,7 +445,7 @@ export default function App() {
                 Exquisitely handcrafted aesthetic seed bead, thread, and clay designs. Custom Haldi sets, stylish bracelets, and anklets made to match your special occasions.
               </p>
               <div style={{ fontSize: '0.85rem', color: '#fed7aa', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Phone size={14} color="#25d366" /> WhatsApp: +{settings?.whatsappNumber || '8801712345678'}
+                <Phone size={14} color="#25d366" /> WhatsApp: +{cleanWaNumber(settings?.whatsappNumber)}
               </div>
             </div>
 
@@ -500,7 +503,11 @@ export default function App() {
             flexWrap: 'wrap',
             gap: '1rem'
           }}>
-            <div>© {new Date().getFullYear()} {settings?.storeName || 'Falguni Handcraft'}. All rights reserved.</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <span>© {new Date().getFullYear()} {settings?.storeName || 'Falguni Handcraft'}. All rights reserved.</span>
+              <span style={{ opacity: 0.4 }}>|</span>
+              <span>Developed by <strong style={{ color: '#fed7aa', fontWeight: 600, letterSpacing: '0.02em' }}>NextGen Work</strong></span>
+            </div>
             <div>Exquisite Handcrafted Jewellery with Customized Colors & Designs</div>
           </div>
         </div>

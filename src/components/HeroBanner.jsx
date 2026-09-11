@@ -1,7 +1,8 @@
 import React from 'react';
 import { Sparkles, MessageSquare, Box, ArrowRight } from 'lucide-react';
 
-export default function HeroBanner({ categories, onSelectCategory, onScrollToProducts, featuredProduct, onSelectProduct }) {
+export default function HeroBanner({ categories, onSelectCategory, onScrollToProducts, featuredProduct, onSelectProduct, settings }) {
+  const cleanWaNumber = (num) => (num ? String(num).replace(/[^0-9]/g, '').replace(/^0/, '880') : '8801855636389');
   return (
     <section style={{
       position: 'relative',
@@ -33,22 +34,17 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
               marginBottom: '1rem'
             }}>
               Handcrafted jewellery <br />
-              <span style={{
-                color: '#e26d21',
-                fontWeight: 700
-              }}>
-                woven with tradition & elegance
-              </span>
+              <span style={{ color: '#e26d21' }}>woven with tradition</span>
             </h1>
 
             <p style={{
-              fontSize: '1.02rem',
+              fontSize: '1.05rem',
               color: '#57534e',
-              marginBottom: '1.8rem',
+              lineHeight: 1.6,
               maxWidth: '520px',
-              lineHeight: 1.65
+              marginBottom: '1.75rem'
             }}>
-              Exquisitely handcrafted by me, featuring aesthetic seed bead, thread, and clay designs. Discover gorgeous customized Haldi sets for your special day, along with stylish bracelets and anklets. Contact us today to order in your favorite colors and designs!
+              Exquisitely handcrafted seed bead necklaces, vibrant thread chokers, and terracotta bridal Haldi sets. Browse, customize your sizing, and connect directly with our artisans.
             </p>
 
             {/* CTAs */}
@@ -56,13 +52,13 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
               <button
                 onClick={onScrollToProducts}
                 className="btn btn-primary"
-                style={{ padding: '0.8rem 1.6rem', fontSize: '0.98rem' }}
+                style={{ padding: '0.75rem 1.6rem', fontSize: '1rem' }}
               >
                 Explore Handcrafted Gallery <ArrowRight size={17} />
               </button>
 
               <a
-                href="https://wa.me/8801712345678?text=Salam%20Falguni%20Handcraft!%20I%20would%20like%20to%20talk%20with%20you%20about%20your%20jewelry."
+                href={`https://wa.me/${cleanWaNumber(settings?.whatsappNumber)}?text=${encodeURIComponent("Hello Falguni Handcraft! I would like to talk with you about your jewelry.")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -196,7 +192,6 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
         <div style={{ marginTop: '3.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
             <div>
-              <span className="badge badge-gold" style={{ marginBottom: '0.25rem' }}>Aarong-Inspired Catalog</span>
               <h2 style={{ fontSize: '1.6rem', color: '#1c1917' }}>Explore Curated Handcrafted Categories</h2>
             </div>
             <span style={{ fontSize: '0.85rem', color: '#78716c' }}>Click any category to filter</span>

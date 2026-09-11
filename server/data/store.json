@@ -3,7 +3,7 @@
     "storeName": "Falguni Handcraft",
     "logo": "/logo.png",
     "tagline": "Handcrafted jewellery woven with tradition & elegance",
-    "whatsappNumber": "8801712345678",
+    "whatsappNumber": "8801855636389",
     "email": "falgunihandcraft@gmail.com",
     "currency": "৳",
     "announcement": "✨ Handcrafted with love: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order in your favorite colors and designs."
@@ -275,10 +275,48 @@
   ],
   "orders": [
     {
+      "id": "ORD-7730",
+      "orderDate": "2026-09-11T04:28:41.201Z",
+      "channel": "whatsapp",
+      "status": "Confirmed Sales",
+      "customer": {
+        "name": "Shawon Barua",
+        "phone": "01911053670",
+        "address": "Cox's Bazar",
+        "city": "Dhaka",
+        "notes": ""
+      },
+      "items": [
+        {
+          "id": "p-102",
+          "title": "Dual-Tone Royal Filigree Brass Kada & Bangle",
+          "price": 980,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80"
+        },
+        {
+          "id": "p-107",
+          "title": "Handwoven Mustard & Indigo Silk Thread Bangle Duo",
+          "price": 620,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80"
+        },
+        {
+          "id": "p-108",
+          "title": "Men's Braided Leather & Hammered Copper Bar Cuff",
+          "price": 890,
+          "quantity": 4,
+          "image": "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80"
+        }
+      ],
+      "totalAmount": 6140,
+      "specialNote": ""
+    },
+    {
       "id": "ORD-1875",
       "orderDate": "2026-09-10T04:32:12.451Z",
       "channel": "email",
-      "status": "In Negotiation",
+      "status": "Confirmed Sales",
       "customer": {
         "name": "Shawon Barua",
         "phone": "01911053670",
@@ -309,7 +347,7 @@
       "id": "ORD-1001",
       "orderDate": "2026-09-08T14:32:00.000Z",
       "channel": "whatsapp",
-      "status": "In Negotiation",
+      "status": "Confirmed Sales",
       "customer": {
         "name": "Nusrat Jahan",
         "phone": "+8801819234567",
@@ -338,7 +376,7 @@
       "id": "ORD-1002",
       "orderDate": "2026-09-09T18:15:00.000Z",
       "channel": "email",
-      "status": "Confirmed",
+      "status": "Confirmed Sales",
       "customer": {
         "name": "Tanvir Ahmed",
         "phone": "+8801711998877",

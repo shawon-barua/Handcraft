@@ -352,18 +352,17 @@ app.get('/api/stats', (req, res) => {
 
   const totalOrders = orders.length;
 
-  // Calculate total sale from confirmed / delivered / in-progress orders or all negotiations
+  // Calculate total sale from confirmed sales
   const confirmedOrCompletedOrders = orders.filter(o =>
-    ['Confirmed', 'Delivered', 'Shipped', 'In Crafting'].includes(o.status)
+    o.status === 'Confirmed' || o.status === 'Confirmed Sales'
   );
 
   const totalSale = confirmedOrCompletedOrders.reduce((acc, o) => acc + (Number(o.totalAmount) || 0), 0);
   const potentialNegotiationSale = orders
-    .filter(o => o.status === 'In Negotiation' || o.status === 'Pending Review')
+    .filter(o => o.status === 'In Negotiation' || o.status === 'Active Negotiation')
     .reduce((acc, o) => acc + (Number(o.totalAmount) || 0), 0);
 
-  const inNegotiationCount = orders.filter(o => o.status === 'In Negotiation').length;
-  const pendingReviewCount = orders.filter(o => o.status === 'Pending Review').length;
+  const inNegotiationCount = orders.filter(o => o.status === 'In Negotiation' || o.status === 'Active Negotiation').length;
 
   // Category breakdown
   const categoryStats = categories.map(cat => {
@@ -391,7 +390,6 @@ app.get('/api/stats', (req, res) => {
     totalSale,
     potentialNegotiationSale,
     inNegotiationCount,
-    pendingReviewCount,
     totalProducts: products.length,
     totalCategories: categories.length,
     categoryStats,

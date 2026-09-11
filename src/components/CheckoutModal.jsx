@@ -72,7 +72,7 @@ export default function CheckoutModal({
         .map((item, idx) => `${idx + 1}. ${item.title} (x${item.quantity}) - ${currency}${item.price * item.quantity}`)
         .join('\n');
 
-      const ownerWhatsApp = settings?.whatsappNumber || '8801712345678';
+      const ownerWhatsApp = (settings?.whatsappNumber || '8801855636389').replace(/[^0-9]/g, '').replace(/^0/, '880');
       const ownerEmail = settings?.email || 'falgunihandcraft@gmail.com';
 
       if (channel === 'whatsapp') {
@@ -89,7 +89,7 @@ ${itemsListText}
 
 💰 *Subtotal:* ${currency} ${subtotal.toLocaleString()}
 
-Salam Falguni Handcraft! I placed this order from your website. Please check my items and let's finalize the order and delivery details!`;
+Hello Falguni Handcraft! I placed this order from your website. Please check my items and let's finalize the order and delivery details!`;
 
         const waUrl = `https://wa.me/${ownerWhatsApp}?text=${encodeURIComponent(waMessage)}`;
         window.open(waUrl, '_blank');
@@ -107,7 +107,7 @@ ${itemsListText}
 
 Total Estimated Amount: ${currency} ${subtotal.toLocaleString()}
 
-Salam, I would like to negotiate and confirm this order.`);
+Hello, I would like to talk with you and confirm this order.`);
         
         window.open(`mailto:${ownerEmail}?subject=${emailSubject}&body=${emailBody}`, '_self');
       }
@@ -218,7 +218,7 @@ Salam, I would like to negotiate and confirm this order.`);
 
               <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <a
-                  href={`https://wa.me/${settings?.whatsappNumber || '8801712345678'}`}
+                  href={`https://wa.me/${(settings?.whatsappNumber || '8801855636389').replace(/[^0-9]/g, '').replace(/^0/, '880')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-whatsapp"
@@ -373,7 +373,7 @@ Salam, I would like to negotiate and confirm this order.`);
                   className="btn btn-whatsapp"
                   style={{ width: '100%', padding: '0.85rem', fontSize: '1rem' }}
                 >
-                  <MessageSquare size={18} /> Send Cart to WhatsApp & Negotiate
+                  <MessageSquare size={18} /> Send Cart to WhatsApp and Talk with Us
                 </button>
 
                 <button
