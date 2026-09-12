@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 Shawon Barua (shawon.cse.ku@gmail.com)
+ * All rights reserved.
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar';
 import HeroBanner from './components/HeroBanner';
@@ -596,7 +601,7 @@ export default function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               <span>© {new Date().getFullYear()} {settings?.storeName || 'Falguni Handcraft'}. All rights reserved.</span>
               <span style={{ opacity: 0.4 }}>|</span>
-              <span>Developed by <strong style={{ color: '#fed7aa', fontWeight: 600, letterSpacing: '0.02em' }}>NextGen Work</strong></span>
+              <span>Architected & Developed by <strong style={{ color: '#fed7aa', fontWeight: 600, letterSpacing: '0.02em' }}>Shawon Barua</strong> (<a href="mailto:shawon.cse.ku@gmail.com" style={{ color: '#fb923c', textDecoration: 'none' }}>shawon.cse.ku@gmail.com</a>)</span>
             </div>
             <div>Exquisite Handcrafted Jewellery with Customized Colors & Designs</div>
           </div>

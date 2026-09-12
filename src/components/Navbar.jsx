@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 Shawon Barua (shawon.cse.ku@gmail.com)
+ * All rights reserved.
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ShoppingBag, Heart, Sparkles, Search, MessageSquare, LayoutDashboard, Store, X, ArrowRight, LogOut, ShieldCheck } from 'lucide-react';
 

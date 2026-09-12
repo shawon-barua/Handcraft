@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 Shawon Barua (shawon.cse.ku@gmail.com)
+ * All rights reserved.
+ */
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 

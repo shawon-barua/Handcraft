@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 Shawon Barua (shawon.cse.ku@gmail.com)
+ * All rights reserved.
+ */
+
 import React, { useState } from 'react';
 import { ShoppingCart, Heart, Images, Check, MessageSquare, Star, Plus, Minus, Eye } from 'lucide-react';
 

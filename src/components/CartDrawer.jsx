@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 Shawon Barua (shawon.cse.ku@gmail.com)
+ * All rights reserved.
+ */
+
 import React from 'react';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, MessageSquare, Sparkles } from 'lucide-react';
 

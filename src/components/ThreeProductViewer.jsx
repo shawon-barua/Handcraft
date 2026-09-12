@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 Shawon Barua (shawon.cse.ku@gmail.com)
+ * All rights reserved.
+ */
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { RotateCw, ZoomIn, ZoomOut, Sun, Sparkles, X, MessageSquare, Check } from 'lucide-react';

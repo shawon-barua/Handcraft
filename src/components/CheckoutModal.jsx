@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2026 Shawon Barua (shawon.cse.ku@gmail.com)
+ * All rights reserved.
+ */
+
 import React, { useState } from 'react';
 import { X, MessageSquare, Mail, CheckCircle2, Sparkles, MapPin, Phone, User, FileText, ArrowRight } from 'lucide-react';
 

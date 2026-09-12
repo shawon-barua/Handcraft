@@ -154,6 +154,8 @@ The backend runs by default at `http://localhost:5005`. Key endpoints include:
 
 ---
 
-## 📄 License
+## 📄 License & Copyright
+
+Copyright © 2026 **Shawon Barua** ([shawon.cse.ku@gmail.com](mailto:shawon.cse.ku@gmail.com)). All rights reserved.
 
 This project is licensed under the [MIT License](LICENSE).
