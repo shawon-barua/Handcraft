@@ -6,6 +6,7 @@ import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
 import ProductDetailModal from './components/ProductDetailModal';
 import AdminPanel from './components/AdminPanel';
+import AdminLoginModal from './components/AdminLoginModal';
 import { 
   Sparkles, MessageSquare, ShoppingBag, Heart, ShieldCheck, 
   RotateCcw, SlidersHorizontal, Phone, Mail, ArrowUp, X
@@ -20,7 +21,7 @@ export default function App() {
     storeName: 'Falguni Handcraft',
     logo: '/logo.png',
     whatsappNumber: '8801855636389',
-    email: 'falgunihandcraft@gmail.com',
+    email: 'shawon.cse.ku@gmail.com',
     currency: '৳',
     announcement: '✨ Exquisitely handcrafted: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order.'
   });
@@ -30,6 +31,17 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [priceSort, setPriceSort] = useState('featured'); // 'featured' | 'low-high' | 'high-low'
+
+  // Authentication state
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('falguni_admin_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Cart & Wishlist state
   const [cart, setCart] = useState(() => {
@@ -97,6 +109,33 @@ export default function App() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Authentication Handlers
+  const handleLoginSuccess = (user, token) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem('falguni_admin_session', JSON.stringify(user));
+      if (token) localStorage.setItem('falguni_admin_token', token);
+    } catch (e) {
+      console.error('Failed to persist admin session:', e);
+    }
+    setIsAdminMode(true);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem('falguni_admin_session');
+      localStorage.removeItem('falguni_admin_token');
+    } catch (e) {
+      console.error('Failed to remove admin session:', e);
+    }
+    setIsAdminMode(false);
+  };
+
+  const handleOpenLogin = () => {
+    setIsLoginModalOpen(true);
+  };
 
   // Cart operations
   const handleAddToCart = (product, quantity = 1) => {
@@ -206,19 +245,29 @@ export default function App() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         isAdminMode={isAdminMode}
-        setIsAdminMode={setIsAdminMode}
+        setIsAdminMode={(mode) => {
+          if (mode && !currentUser) {
+            setIsLoginModalOpen(true);
+          } else {
+            setIsAdminMode(mode);
+          }
+        }}
         products={products}
         onSelectProduct={setSelectedProductForDetail}
         onSearchSubmit={scrollToProducts}
         currency={currency}
+        currentUser={currentUser}
+        onOpenLogin={handleOpenLogin}
+        onLogout={handleLogout}
       />
 
       {/* Main Content: Storefront or Admin Panel */}
-      {isAdminMode ? (
+      {isAdminMode && currentUser ? (
         <AdminPanel
           initialSettings={settings}
           onRefreshData={loadData}
           currency={currency}
+          currentUser={currentUser}
         />
       ) : (
         <main style={{ flex: 1 }}>
@@ -669,6 +718,13 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Admin Authentication Modal */}
+      <AdminLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </div>
   );
 }

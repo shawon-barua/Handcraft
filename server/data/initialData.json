@@ -4,7 +4,7 @@
     "logo": "/logo.png",
     "tagline": "Handcrafted jewellery woven with tradition & elegance",
     "whatsappNumber": "8801855636389",
-    "email": "falgunihandcraft@gmail.com",
+    "email": "shawon.cse.ku@gmail.com",
     "currency": "৳",
     "announcement": "✨ Handcrafted with love: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order in your favorite colors and designs.",
     "featuredProductId": "p-101"
@@ -360,6 +360,16 @@
       ],
       "totalAmount": 1640,
       "specialNote": "Confirmed via WhatsApp call. Gift wrap requested with greeting card. Scheduled delivery via Pathao Courier."
+    }
+  ],
+  "admins": [
+    {
+      "id": "admin-super-01",
+      "name": "Shawon (Super Admin)",
+      "email": "shawon.cse.ku@gmail.com",
+      "password": "superadmin123",
+      "role": "superadmin",
+      "createdAt": "2026-09-12T00:00:00.000Z"
     }
   ]
 }

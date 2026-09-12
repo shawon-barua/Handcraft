@@ -12,7 +12,9 @@ import {
   Share2,
   Maximize2,
   Package,
-  Clock
+  Clock,
+  Copy,
+  Check
 } from 'lucide-react';
 
 export default function ProductDetailModal({ product, settings, isOpen, onClose, onAddToCart }) {
@@ -20,12 +22,16 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
   const [quantity, setQuantity] = useState(1);
   const [copied, setCopied] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [showEmailPopup, setShowEmailPopup] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
 
   useEffect(() => {
     if (product) {
       setActiveImageIndex(0);
       setQuantity(1);
       setIsZoomed(false);
+      setShowEmailPopup(false);
+      setEmailCopied(false);
     }
   }, [product]);
 
@@ -77,17 +83,54 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
     return `https://wa.me/${whatsappNumber}?text=${text}`;
   };
 
+  const emailRecipient = settings?.email || 'shawon.cse.ku@gmail.com';
+  const emailSubject = `Order Inquiry: ${product.title}`;
+  const emailBodyText = 
+`Hello Falguni Handcraft,
+
+I want to inquire about purchasing this handcrafted item:
+
+Product: ${product.title}
+Price: ৳${product.price?.toLocaleString()} BDT
+Quantity: ${quantity}
+Estimated Total: ৳${((product.price || 0) * quantity).toLocaleString()} BDT
+
+Please let me know how we can proceed !`;
+
   const getEmailLink = () => {
-    const email = settings?.email || 'falgunihandcraft@gmail.com';
-    const subject = encodeURIComponent(`Order Inquiry: ${product.title}`);
-    const body = encodeURIComponent(
-      `Hello Falguni Handcraft,\n\nI want to inquire about purchasing:\n\n` +
-      `Product: ${product.title}\n` +
-      `Price: ৳${product.price} BDT\n` +
-      `Quantity: ${quantity}\n\n` +
-      `Please provide details on delivery and custom color options.`
-    );
-    return `mailto:${email}?subject=${subject}&body=${body}`;
+    const subject = encodeURIComponent(emailSubject);
+    const body = encodeURIComponent(emailBodyText);
+    return `mailto:${emailRecipient}?subject=${subject}&body=${body}`;
+  };
+
+  const handleConfirmSend = () => {
+    // 1. Record inquiry in backend orders/inquiries list
+    try {
+      fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer: { name: 'Direct Email Inquiry', phone: '', address: 'Online Product Inquiry', city: '' },
+          items: [{ ...product, quantity }],
+          channel: 'email',
+          totalAmount: (product.price || 0) * quantity,
+          status: 'Inquiry',
+          notes: `Inquiry sent to store email: ${emailRecipient}`
+        })
+      }).catch(() => {});
+    } catch (e) {}
+
+    // 2. Open email composer targeting the configured email from settings
+    const isGmail = emailRecipient.toLowerCase().includes('gmail.com');
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailRecipient)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBodyText)}`;
+
+    if (isGmail) {
+      window.open(gmailUrl, '_blank');
+    } else {
+      window.location.href = getEmailLink();
+    }
+
+    setShowEmailPopup(false);
   };
 
   const handleShare = () => {
@@ -499,13 +542,17 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
                 <MessageCircle size={18} /> Talk with Us by WhatsApp
               </a>
 
-              <a
-                href={getEmailLink()}
+              <button
+                type="button"
+                onClick={() => {
+                  setEmailCopied(false);
+                  setShowEmailPopup(true);
+                }}
                 className="btn btn-secondary"
-                style={{ width: '100%', padding: '0.55rem', fontSize: '0.85rem' }}
+                style={{ width: '100%', padding: '0.65rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem', cursor: 'pointer' }}
               >
                 <Mail size={16} /> Send Email Inquiry
-              </a>
+              </button>
 
               {/* Delivery info */}
               <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.72rem', color: '#a8a29e', marginTop: '0.4rem' }}>
@@ -521,6 +568,151 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
           </div>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* EMAIL INQUIRY PREVIEW POPUP DIALOG                                       */}
+      {/* ========================================================================= */}
+      {showEmailPopup && (
+        <div 
+          className="modal-overlay" 
+          onClick={() => setShowEmailPopup(false)} 
+          style={{ zIndex: 1200, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(4px)' }}
+        >
+          <div 
+            className="modal-content" 
+            onClick={e => e.stopPropagation()} 
+            style={{ 
+              maxWidth: '520px', 
+              width: '92%', 
+              padding: '1.65rem', 
+              background: '#ffffff', 
+              borderRadius: 'var(--radius-lg)', 
+              boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+              border: '1px solid #e7e2db',
+              animation: 'fadeIn 0.2s ease-out'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', borderBottom: '1px solid #f0eae1', paddingBottom: '0.85rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', color: '#1c1917', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <Mail size={20} color="#e26d21" /> Email Inquiry Preview
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: '#78716c', margin: '4px 0 0 0' }}>
+                  Review your inquiry message before sending to the artisan.
+                </p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowEmailPopup(false)} 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#78716c', padding: '4px' }}
+                title="Close popup"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Recipient & Subject Info */}
+            <div style={{ background: '#faf8f5', border: '1px solid #e7e2db', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', marginBottom: '0.35rem', gap: '0.5rem' }}>
+                <span style={{ color: '#78716c', fontWeight: 600, width: '65px' }}>To:</span>
+                <strong style={{ color: '#1c1917' }}>{emailRecipient}</strong>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <span style={{ color: '#78716c', fontWeight: 600, width: '65px' }}>Subject:</span>
+                <strong style={{ color: '#1c1917' }}>{emailSubject}</strong>
+              </div>
+            </div>
+
+            {/* Message Body Preview */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#44403c', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Message Content
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(emailBodyText);
+                    setEmailCopied(true);
+                    setTimeout(() => setEmailCopied(false), 2200);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: emailCopied ? '#15803d' : '#e26d21',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '2px 4px'
+                  }}
+                >
+                  {emailCopied ? (
+                    <>
+                      <Check size={14} /> Copied to clipboard!
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={14} /> Copy text
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div style={{
+                background: '#fcfbf9',
+                border: '1px solid #e7e2db',
+                borderRadius: 'var(--radius-sm)',
+                padding: '0.85rem 1rem',
+                fontSize: '0.86rem',
+                color: '#1c1917',
+                whiteSpace: 'pre-wrap',
+                lineHeight: 1.6,
+                maxHeight: '190px',
+                overflowY: 'auto'
+              }}>
+                {emailBodyText}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setShowEmailPopup(false)}
+                className="btn btn-secondary"
+                style={{ padding: '0.6rem 1.1rem', fontSize: '0.88rem' }}
+              >
+                Cancel
+              </button>
+
+              <a
+                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailRecipient)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBodyText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setShowEmailPopup(false)}
+                className="btn btn-secondary"
+                style={{ padding: '0.6rem 1rem', fontSize: '0.85rem', color: '#ea4335', borderColor: '#fca5a5' }}
+                title="Open directly in web browser Gmail"
+              >
+                Open in Gmail
+              </a>
+
+              <button
+                type="button"
+                onClick={handleConfirmSend}
+                className="btn btn-primary"
+                style={{ padding: '0.6rem 1.4rem', fontSize: '0.88rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

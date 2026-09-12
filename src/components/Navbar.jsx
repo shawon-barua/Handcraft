@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ShoppingBag, Heart, Sparkles, Search, MessageSquare, LayoutDashboard, Store, X, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Heart, Sparkles, Search, MessageSquare, LayoutDashboard, Store, X, ArrowRight, LogOut, ShieldCheck } from 'lucide-react';
 
 export default function Navbar({ 
   settings, 
@@ -17,7 +17,10 @@ export default function Navbar({
   products = [],
   onSelectProduct,
   onSearchSubmit,
-  currency = '৳'
+  currency = '৳',
+  currentUser,
+  onOpenLogin,
+  onLogout
 }) {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchContainerRef = useRef(null);
@@ -368,29 +371,102 @@ export default function Navbar({
               )}
             </button>
 
-            {/* Admin Panel Toggle */}
-            <button
-              onClick={() => setIsAdminMode(!isAdminMode)}
-              className={isAdminMode ? "btn btn-dark btn-sm navbar-action-btn" : "btn btn-secondary btn-sm navbar-action-btn"}
-              style={{
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.8rem',
-                border: isAdminMode ? 'none' : '1px solid #d6d0c7',
-                padding: '0.5rem 0.85rem',
-                minHeight: '38px'
-              }}
-              title={isAdminMode ? "Switch to Storefront" : "Switch to Admin"}
-            >
-              {isAdminMode ? (
-                <>
-                  <Store size={15} /> <span className="navbar-btn-text">Store</span>
-                </>
-              ) : (
-                <>
-                  <LayoutDashboard size={15} /> <span className="navbar-btn-text">Admin</span>
-                </>
-              )}
-            </button>
+            {/* Admin Panel Toggle or Login Trigger */}
+            {currentUser ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <button
+                  onClick={() => setIsAdminMode(!isAdminMode)}
+                  className={isAdminMode ? "btn btn-dark btn-sm navbar-action-btn" : "btn btn-secondary btn-sm navbar-action-btn"}
+                  style={{
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.8rem',
+                    border: isAdminMode ? 'none' : '1px solid #d6d0c7',
+                    padding: '0.5rem 0.85rem',
+                    minHeight: '38px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                  title={isAdminMode ? "Switch to Storefront" : "Switch to Admin Portal"}
+                >
+                  {isAdminMode ? (
+                    <>
+                      <Store size={15} /> <span className="navbar-btn-text">Store</span>
+                    </>
+                  ) : (
+                    <>
+                      <LayoutDashboard size={15} /> <span className="navbar-btn-text">Admin</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Role Badge & Logout button */}
+                <div 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.35rem',
+                    background: '#faf8f5',
+                    padding: '0.2rem 0.4rem 0.2rem 0.65rem',
+                    borderRadius: 'var(--radius-full)',
+                    border: '1px solid #e7e2db',
+                    fontSize: '0.75rem'
+                  }}
+                  title={`Logged in as ${currentUser.name || currentUser.email} (${currentUser.role === 'superadmin' ? 'Super Admin' : 'Admin'})`}
+                >
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    fontWeight: 700,
+                    color: currentUser.role === 'superadmin' ? '#c0520d' : '#2563eb'
+                  }}>
+                    <ShieldCheck size={13} />
+                    <span className="navbar-btn-text">{currentUser.role === 'superadmin' ? 'SuperAdmin' : 'Admin'}</span>
+                  </span>
+
+                  <button
+                    onClick={onLogout}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '4px',
+                      cursor: 'pointer',
+                      color: '#78716c',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'color 0.15s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#dc2626'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#78716c'}
+                    title="Log Out of Admin"
+                  >
+                    <LogOut size={13} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={onOpenLogin}
+                className="btn btn-secondary btn-sm navbar-action-btn"
+                style={{
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: '0.8rem',
+                  border: '1px solid #d6d0c7',
+                  padding: '0.5rem 0.85rem',
+                  minHeight: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+                title="Admin Sign In"
+              >
+                <LayoutDashboard size={15} />
+                <span className="navbar-btn-text">Admin</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

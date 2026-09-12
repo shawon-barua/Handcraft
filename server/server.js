@@ -66,16 +66,44 @@ app.post('/api/upload', (req, res) => {
 // Initialize store if not present
 function loadStore() {
   try {
+    let storeData;
     if (!fs.existsSync(STORE_FILE)) {
       const initialData = fs.readFileSync(INITIAL_FILE, 'utf-8');
       fs.writeFileSync(STORE_FILE, initialData, 'utf-8');
-      return JSON.parse(initialData);
+      storeData = JSON.parse(initialData);
+    } else {
+      const data = fs.readFileSync(STORE_FILE, 'utf-8');
+      storeData = JSON.parse(data);
     }
-    const data = fs.readFileSync(STORE_FILE, 'utf-8');
-    return JSON.parse(data);
+
+    // Guarantee default Super Admin exists and is protected
+    if (!storeData.admins || !Array.isArray(storeData.admins) || storeData.admins.length === 0) {
+      storeData.admins = [
+        {
+          id: 'admin-super-01',
+          name: 'Shawon (Super Admin)',
+          email: 'shawon.cse.ku@gmail.com',
+          password: 'superadmin123',
+          role: 'superadmin',
+          createdAt: new Date().toISOString()
+        }
+      ];
+      saveStore(storeData);
+    } else {
+      // Ensure primary superadmin has role 'superadmin'
+      const superAdminIndex = storeData.admins.findIndex(
+        a => a.id === 'admin-super-01' || a.email.toLowerCase() === 'shawon.cse.ku@gmail.com'
+      );
+      if (superAdminIndex !== -1 && storeData.admins[superAdminIndex].role !== 'superadmin') {
+        storeData.admins[superAdminIndex].role = 'superadmin';
+        saveStore(storeData);
+      }
+    }
+
+    return storeData;
   } catch (err) {
     console.error('Error reading store file:', err);
-    return { categories: [], products: [], orders: [], settings: {} };
+    return { categories: [], products: [], orders: [], settings: {}, admins: [] };
   }
 }
 
@@ -86,6 +114,126 @@ function saveStore(data) {
     console.error('Error saving store file:', err);
   }
 }
+
+// -------------------------------------------------------------
+// AUTHENTICATION & ADMIN MANAGEMENT
+// -------------------------------------------------------------
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const db = loadStore();
+    const normalizedInput = email.trim().toLowerCase();
+
+    // Find admin matching email or username
+    const admin = (db.admins || []).find(a => 
+      a.email.toLowerCase() === normalizedInput ||
+      (a.username && a.username.toLowerCase() === normalizedInput)
+    );
+
+    if (!admin || admin.password !== password) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Success: return safe user info (exclude password)
+    const { password: _, ...safeUser } = admin;
+    res.json({
+      success: true,
+      user: safeUser,
+      token: `admin-token-${admin.id}-${Date.now()}`
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Internal server error during login' });
+  }
+});
+
+// List admins (passwords omitted)
+app.get('/api/auth/admins', (req, res) => {
+  try {
+    const db = loadStore();
+    const safeAdmins = (db.admins || []).map(({ password, ...rest }) => rest);
+    res.json(safeAdmins);
+  } catch (err) {
+    console.error('Fetch admins error:', err);
+    res.status(500).json({ error: 'Failed to fetch admin list' });
+  }
+});
+
+// Create new admin (Superadmin capability)
+app.post('/api/auth/admins', (req, res) => {
+  try {
+    const { name, email, password, role } = req.body || {};
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
+    const db = loadStore();
+    if (!db.admins) db.admins = [];
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = db.admins.find(a => a.email.toLowerCase() === normalizedEmail);
+    if (existing) {
+      return res.status(400).json({ error: 'An admin account with this email already exists' });
+    }
+
+    const newAdmin = {
+      id: `admin-${Date.now()}`,
+      name: name.trim(),
+      email: normalizedEmail,
+      password: password.trim(),
+      role: role === 'superadmin' ? 'superadmin' : 'admin',
+      createdAt: new Date().toISOString()
+    };
+
+    db.admins.push(newAdmin);
+    saveStore(db);
+
+    const { password: _, ...safeUser } = newAdmin;
+    res.status(201).json({ success: true, admin: safeUser });
+  } catch (err) {
+    console.error('Create admin error:', err);
+    res.status(500).json({ error: 'Failed to create admin' });
+  }
+});
+
+// Delete an admin account (Protected: Cannot delete Super Admin)
+app.delete('/api/auth/admins/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = loadStore();
+    if (!db.admins) return res.status(404).json({ error: 'No admin accounts found' });
+
+    const targetIndex = db.admins.findIndex(a => a.id === id);
+    if (targetIndex === -1) {
+      return res.status(404).json({ error: 'Admin account not found' });
+    }
+
+    const target = db.admins[targetIndex];
+
+    // STRICT PROTECTION: Cannot delete Super Admin
+    if (
+      target.role === 'superadmin' || 
+      target.id === 'admin-super-01' || 
+      target.email.toLowerCase() === 'shawon.cse.ku@gmail.com'
+    ) {
+      return res.status(403).json({ 
+        error: 'CRITICAL SECURITY: The Super Admin account cannot be deleted or removed.' 
+      });
+    }
+
+    db.admins.splice(targetIndex, 1);
+    saveStore(db);
+
+    res.json({ success: true, message: `Admin account '${target.name}' successfully deleted` });
+  } catch (err) {
+    console.error('Delete admin error:', err);
+    res.status(500).json({ error: 'Failed to delete admin' });
+  }
+});
 
 // -------------------------------------------------------------
 // SETTINGS

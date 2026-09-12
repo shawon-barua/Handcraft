@@ -4,10 +4,10 @@
     "logo": "/logo.png",
     "tagline": "Handcrafted jewellery woven with tradition & elegance",
     "whatsappNumber": "8801855636389",
-    "email": "falgunihandcraft@gmail.com",
+    "email": "Falgunisdesign@gmail.com",
     "currency": "৳",
     "announcement": "✨ Handcrafted with love: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order in your favorite colors and designs.",
-    "featuredProductId": "p-106"
+    "featuredProductId": "p-108"
   },
   "categories": [
     {
@@ -57,14 +57,6 @@
       "description": "Baby-safe nazariya black beads, soft chime silver bells, and smooth organic wooden beads.",
       "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80",
       "icon": "Baby"
-    },
-    {
-      "id": "test",
-      "name": "test",
-      "slug": "test",
-      "description": "test",
-      "image": "/uploads/item-1789184492218-ovwjp.jpg",
-      "icon": "Sparkles"
     }
   ],
   "products": [
@@ -284,10 +276,82 @@
   ],
   "orders": [
     {
+      "id": "ORD-6037",
+      "orderDate": "2026-09-12T08:09:48.625Z",
+      "channel": "email",
+      "status": "In Negotiation",
+      "customer": {
+        "name": "Direct Email Inquiry",
+        "phone": "",
+        "address": "Online Product Inquiry",
+        "city": "Dhaka",
+        "notes": ""
+      },
+      "items": [
+        {
+          "id": "p-108",
+          "title": "Men's Braided Leather & Hammered Copper Bar Cuff",
+          "price": 890,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80"
+        }
+      ],
+      "totalAmount": 890,
+      "specialNote": ""
+    },
+    {
+      "id": "ORD-3597",
+      "orderDate": "2026-09-12T08:05:14.461Z",
+      "channel": "email",
+      "status": "Confirmed Sales",
+      "customer": {
+        "name": "Direct Email Inquiry",
+        "phone": "",
+        "address": "Online Product Inquiry",
+        "city": "Dhaka",
+        "notes": ""
+      },
+      "items": [
+        {
+          "id": "p-108",
+          "title": "Men's Braided Leather & Hammered Copper Bar Cuff",
+          "price": 890,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80"
+        }
+      ],
+      "totalAmount": 890,
+      "specialNote": ""
+    },
+    {
+      "id": "ORD-2102",
+      "orderDate": "2026-09-12T08:03:29.508Z",
+      "channel": "email",
+      "status": "In Negotiation",
+      "customer": {
+        "name": "Direct Email Inquiry",
+        "phone": "",
+        "address": "Online Product Inquiry",
+        "city": "Dhaka",
+        "notes": ""
+      },
+      "items": [
+        {
+          "id": "p-108",
+          "title": "Men's Braided Leather & Hammered Copper Bar Cuff",
+          "price": 890,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80"
+        }
+      ],
+      "totalAmount": 890,
+      "specialNote": ""
+    },
+    {
       "id": "ORD-7730",
       "orderDate": "2026-09-11T04:28:41.201Z",
       "channel": "whatsapp",
-      "status": "Cancelled",
+      "status": "Active Negotiation",
       "customer": {
         "name": "Shawon Barua",
         "phone": "01911053670",
@@ -409,6 +473,16 @@
       ],
       "totalAmount": 1640,
       "specialNote": "Confirmed via WhatsApp call. Gift wrap requested with greeting card. Scheduled delivery via Pathao Courier."
+    }
+  ],
+  "admins": [
+    {
+      "id": "admin-super-01",
+      "name": "Shawon (Super Admin)",
+      "email": "shawon.cse.ku@gmail.com",
+      "password": "superadmin123",
+      "role": "superadmin",
+      "createdAt": "2026-09-12T00:00:00.000Z"
     }
   ]
 }

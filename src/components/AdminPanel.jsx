@@ -3,15 +3,17 @@ import {
   LayoutDashboard, ShoppingBag, FolderTree, Package, Settings, 
   DollarSign, TrendingUp, Clock, CheckCircle2, MessageSquare, 
   Edit3, Trash2, Plus, Save, Search, Filter, ExternalLink, Sparkles, RefreshCw, AlertCircle,
-  Upload, Image as ImageIcon, Check, X, ArrowRight, ArrowDown, XCircle, ChevronRight, Phone, MapPin, Eye
+  Upload, Image as ImageIcon, Check, X, ArrowRight, ArrowDown, XCircle, ChevronRight, Phone, MapPin, Eye,
+  ShieldCheck, Lock, User, Users, ShieldAlert
 } from 'lucide-react';
 
 export default function AdminPanel({
   initialSettings,
   onRefreshData,
-  currency = '৳'
+  currency = '৳',
+  currentUser
 }) {
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'orders' | 'categories' | 'products' | 'settings'
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'orders' | 'categories' | 'products' | 'settings' | 'admins'
   const [stats, setStats] = useState(null);
   const [orders, setOrders] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -19,6 +21,14 @@ export default function AdminPanel({
   const [settings, setSettings] = useState(initialSettings || {});
   const [isLoading, setIsLoading] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
+
+  // Admin Team Management states (Super Admin exclusive)
+  const [adminList, setAdminList] = useState([]);
+  const [isLoadingAdmins, setIsLoadingAdmins] = useState(false);
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+  const [newAdminData, setNewAdminData] = useState({ name: '', email: '', password: '', role: 'admin' });
+  const [adminActionError, setAdminActionError] = useState('');
+  const [adminActionSuccess, setAdminActionSuccess] = useState('');
 
   // Filter & Search states
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
@@ -85,9 +95,87 @@ export default function AdminPanel({
     }
   };
 
+  const fetchAdmins = async () => {
+    setIsLoadingAdmins(true);
+    try {
+      const res = await fetch('/api/auth/admins');
+      if (res.ok) {
+        const data = await res.json();
+        setAdminList(data);
+      }
+    } catch (err) {
+      console.error('Failed to load admin team list:', err);
+    } finally {
+      setIsLoadingAdmins(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
-  }, []);
+    if (currentUser?.role === 'superadmin') {
+      fetchAdmins();
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (activeTab === 'admins' && currentUser?.role === 'superadmin') {
+      fetchAdmins();
+    }
+  }, [activeTab]);
+
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+    setAdminActionError('');
+    setAdminActionSuccess('');
+
+    if (!newAdminData.name.trim() || !newAdminData.email.trim() || !newAdminData.password.trim()) {
+      setAdminActionError('Please provide name, email, and initial password.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/admins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAdminData)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to add administrator.');
+      }
+
+      setAdminActionSuccess(`Administrator '${data.admin.name}' successfully created.`);
+      setNewAdminData({ name: '', email: '', password: '', role: 'admin' });
+      setShowAddAdminModal(false);
+      fetchAdmins();
+    } catch (err) {
+      setAdminActionError(err.message || 'Error creating administrator.');
+    }
+  };
+
+  const handleDeleteAdmin = async (adminId, adminName) => {
+    if (!window.confirm(`Are you sure you want to remove administrator "${adminName}"? They will permanently lose access to the admin site.`)) {
+      return;
+    }
+
+    setAdminActionError('');
+    setAdminActionSuccess('');
+
+    try {
+      const res = await fetch(`/api/auth/admins/${adminId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to remove administrator.');
+      }
+
+      setAdminActionSuccess(data.message || `Admin account removed.`);
+      fetchAdmins();
+    } catch (err) {
+      setAdminActionError(err.message || 'Error removing administrator.');
+    }
+  };
 
   // Handle saving Special Note on an Order
   const handleSaveSpecialNote = async (orderId) => {
@@ -391,9 +479,26 @@ export default function AdminPanel({
           gap: '1rem'
         }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <span className="badge badge-gold" style={{ color: '#c0520d', borderColor: '#fed7aa', background: '#fff7ed' }}>Artisan Portal</span>
               <span style={{ fontSize: '0.8rem', color: '#78716c' }}>Backend Management & Analytics</span>
+              {currentUser && (
+                <span style={{
+                  fontSize: '0.75rem',
+                  background: currentUser.role === 'superadmin' ? '#fff7ed' : '#eff6ff',
+                  color: currentUser.role === 'superadmin' ? '#c0520d' : '#1d4ed8',
+                  border: `1px solid ${currentUser.role === 'superadmin' ? '#fed7aa' : '#bfdbfe'}`,
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <ShieldCheck size={13} />
+                  {currentUser.role === 'superadmin' ? 'Super Admin' : 'Standard Admin'} ({currentUser.name || currentUser.email})
+                </span>
+              )}
             </div>
             <h1 style={{ fontSize: '2rem', color: '#1c1917', marginTop: '0.2rem' }}>
               Store Administration
@@ -426,7 +531,10 @@ export default function AdminPanel({
             { id: 'orders', label: `Customer Orders & Carts (${orders.length})`, icon: ShoppingBag },
             { id: 'categories', label: `Categories (${categories.length})`, icon: FolderTree },
             { id: 'products', label: `Products (${products.length})`, icon: Package },
-            { id: 'settings', label: 'Store Settings', icon: Settings }
+            { id: 'settings', label: 'Store Settings', icon: Settings },
+            ...(currentUser?.role === 'superadmin' ? [
+              { id: 'admins', label: `Admin Team (${adminList.length})`, icon: ShieldCheck }
+            ] : [])
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1039,24 +1147,30 @@ export default function AdminPanel({
               justifyContent: 'space-between'
             }}>
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Filter Status:</span>
-                {['all', 'Active Negotiation', 'Confirmed Sales', 'Cancelled'].map(status => (
-                  <button
-                    key={status}
-                    onClick={() => setOrderStatusFilter(status)}
-                    style={{
-                      padding: '0.35rem 0.75rem',
-                      borderRadius: 'var(--radius-full)',
-                      fontSize: '0.78rem',
-                      border: orderStatusFilter === status ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.1)',
-                      background: orderStatusFilter === status ? 'rgba(217, 119, 6, 0.2)' : 'rgba(255,255,255,0.03)',
-                      color: orderStatusFilter === status ? '#fcd34d' : 'var(--text-main)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {status === 'all' ? 'All Orders' : status}
-                  </button>
-                ))}
+                <span style={{ fontSize: '0.88rem', color: '#1c1917', fontWeight: 700 }}>Filter Status:</span>
+                {['all', 'Active Negotiation', 'Confirmed Sales', 'Cancelled', 'Inquiry'].map(status => {
+                  const isSelected = orderStatusFilter === status;
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => setOrderStatusFilter(status)}
+                      style={{
+                        padding: '0.45rem 0.95rem',
+                        borderRadius: 'var(--radius-full)',
+                        fontSize: '0.82rem',
+                        fontWeight: isSelected ? 700 : 600,
+                        border: isSelected ? '1.5px solid #1d4ed8' : '1px solid #bfdbfe',
+                        background: isSelected ? '#2563eb' : '#eff6ff',
+                        color: isSelected ? '#ffffff' : '#1d4ed8',
+                        cursor: 'pointer',
+                        boxShadow: isSelected ? '0 2px 8px rgba(37, 99, 235, 0.35)' : 'none',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {status === 'all' ? 'All Orders' : status}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Order Search */}
@@ -1652,6 +1766,472 @@ export default function AdminPanel({
                 <Save size={16} /> Save Settings
               </button>
             </form>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* TAB 6: ADMIN TEAM & ROLES (SUPER ADMIN EXCLUSIVE)             */}
+        {/* ------------------------------------------------------------- */}
+        {activeTab === 'admins' && currentUser?.role === 'superadmin' && (
+          <div>
+            {/* Super Admin Access Control Banner */}
+            <div 
+              style={{
+                background: 'linear-gradient(135deg, #faf8f5 0%, #fff7ed 100%)',
+                border: '1px solid #fed7aa',
+                borderRadius: 'var(--radius-md)',
+                padding: '1.4rem',
+                marginBottom: '1.75rem',
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1.2rem',
+                boxShadow: '0 2px 8px rgba(226, 109, 33, 0.08)'
+              }}
+            >
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', maxWidth: '750px' }}>
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '12px',
+                  background: '#e26d21',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(226, 109, 33, 0.3)'
+                }}>
+                  <ShieldCheck size={24} />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <h3 style={{ fontSize: '1.15rem', color: '#1c1917', margin: 0, fontWeight: 700 }}>
+                      Super Admin Security & Role-Based Control
+                    </h3>
+                    <span className="badge badge-gold" style={{ fontSize: '0.72rem', color: '#c0520d', background: '#fff' }}>
+                      Protected Tier
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.84rem', color: '#78716c', margin: 0, lineHeight: 1.5 }}>
+                    You have exclusive access to manage administrators. Standard Admins can operate daily website functions
+                    (Catalog, Orders, Inquiries, and Store Settings) but <strong>CANNOT</strong> access this team management area,
+                    nor can they ever delete or modify your Super Admin account.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowAddAdminModal(true)}
+                className="btn btn-primary btn-sm"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.65rem 1.15rem',
+                  fontSize: '0.86rem',
+                  borderRadius: 'var(--radius-sm)'
+                }}
+              >
+                <Plus size={16} /> Add New Administrator
+              </button>
+            </div>
+
+            {/* Feedback Alerts */}
+            {adminActionSuccess && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                padding: '0.85rem 1.2rem',
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: '8px',
+                color: '#166534',
+                fontSize: '0.86rem',
+                marginBottom: '1.4rem'
+              }}>
+                <CheckCircle2 size={18} color="#16a34a" />
+                <span>{adminActionSuccess}</span>
+              </div>
+            )}
+
+            {adminActionError && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                padding: '0.85rem 1.2rem',
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                color: '#b91c1c',
+                fontSize: '0.86rem',
+                marginBottom: '1.4rem'
+              }}>
+                <AlertCircle size={18} color="#dc2626" />
+                <span>{adminActionError}</span>
+              </div>
+            )}
+
+            {/* Team Summary Metric Cards */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+              gap: '1rem',
+              marginBottom: '1.75rem'
+            }}>
+              <div className="glass-panel" style={{ padding: '1.2rem', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontSize: '0.8rem', color: '#78716c', fontWeight: 600 }}>Total Administrators</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1c1917', marginTop: '0.2rem' }}>
+                  {adminList.length}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#059669', marginTop: '0.2rem' }}>
+                  All accounts active & verified
+                </div>
+              </div>
+
+              <div className="glass-panel" style={{ padding: '1.2rem', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontSize: '0.8rem', color: '#78716c', fontWeight: 600 }}>Super Admin (Protected)</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#e26d21', marginTop: '0.2rem' }}>
+                  {adminList.filter(a => a.role === 'superadmin').length}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#78716c', marginTop: '0.2rem' }}>
+                  Primary account (Shawon)
+                </div>
+              </div>
+
+              <div className="glass-panel" style={{ padding: '1.2rem', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontSize: '0.8rem', color: '#78716c', fontWeight: 600 }}>Standard Website Admins</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#2563eb', marginTop: '0.2rem' }}>
+                  {adminList.filter(a => a.role !== 'superadmin').length}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#78716c', marginTop: '0.2rem' }}>
+                  Operations & catalog management only
+                </div>
+              </div>
+            </div>
+
+            {/* Administrators Table Container */}
+            <div className="glass-panel" style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+              <div style={{
+                padding: '1.1rem 1.4rem',
+                borderBottom: '1px solid #e7e2db',
+                background: '#faf8f5',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', color: '#1c1917', fontWeight: 700 }}>
+                  Active Administrative Accounts
+                </h4>
+                <span style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                  Showing {adminList.length} total staff accounts
+                </span>
+              </div>
+
+              {isLoadingAdmins ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: '#78716c' }}>
+                  <RefreshCw size={24} className="spin" style={{ margin: '0 auto 0.75rem' }} />
+                  <div>Loading administrator records...</div>
+                </div>
+              ) : adminList.length === 0 ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: '#78716c' }}>
+                  No administrators found.
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f6f2', borderBottom: '1px solid #e7e2db', color: '#57534e' }}>
+                        <th style={{ padding: '0.85rem 1.4rem', fontWeight: 600 }}>Administrator</th>
+                        <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Access Level / Role</th>
+                        <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Account Created</th>
+                        <th style={{ padding: '0.85rem 1.4rem', fontWeight: 600, textAlign: 'right' }}>Security Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminList.map((admin) => {
+                        const isSuperAdmin = admin.role === 'superadmin' || admin.id === 'admin-super-01' || admin.email.toLowerCase() === 'shawon.cse.ku@gmail.com';
+
+                        return (
+                          <tr 
+                            key={admin.id}
+                            style={{
+                              borderBottom: '1px solid #f0ebe4',
+                              transition: 'background 0.15s ease'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#faf8f5'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                          >
+                            {/* Administrator Name & Email */}
+                            <td style={{ padding: '1rem 1.4rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{
+                                  width: '38px',
+                                  height: '38px',
+                                  borderRadius: '50%',
+                                  background: isSuperAdmin ? '#fff7ed' : '#eff6ff',
+                                  border: `1px solid ${isSuperAdmin ? '#fed7aa' : '#bfdbfe'}`,
+                                  color: isSuperAdmin ? '#c0520d' : '#1d4ed8',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 700,
+                                  fontSize: '0.9rem',
+                                  flexShrink: 0
+                                }}>
+                                  {admin.name ? admin.name.charAt(0).toUpperCase() : 'A'}
+                                </div>
+                                <div>
+                                  <div style={{ fontWeight: 700, color: '#1c1917' }}>
+                                    {admin.name}
+                                  </div>
+                                  <div style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                                    {admin.email}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Access Level / Role Badge */}
+                            <td style={{ padding: '1rem 1.2rem' }}>
+                              {isSuperAdmin ? (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  background: '#fff7ed',
+                                  border: '1px solid #fed7aa',
+                                  color: '#c0520d',
+                                  padding: '0.25rem 0.65rem',
+                                  borderRadius: 'var(--radius-full)',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 700
+                                }}>
+                                  <ShieldCheck size={14} />
+                                  Super Administrator
+                                </span>
+                              ) : (
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  background: '#eff6ff',
+                                  border: '1px solid #bfdbfe',
+                                  color: '#1d4ed8',
+                                  padding: '0.25rem 0.65rem',
+                                  borderRadius: 'var(--radius-full)',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 600
+                                }}>
+                                  <User size={14} />
+                                  Standard Admin (Website Ops)
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Date Created */}
+                            <td style={{ padding: '1rem 1.2rem', color: '#78716c', fontSize: '0.82rem' }}>
+                              {admin.createdAt ? new Date(admin.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              }) : 'Primary Seed'}
+                            </td>
+
+                            {/* Security Actions */}
+                            <td style={{ padding: '1rem 1.4rem', textAlign: 'right' }}>
+                              {isSuperAdmin ? (
+                                <span 
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.35rem',
+                                    color: '#059669',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 600,
+                                    background: '#ecfdf5',
+                                    border: '1px solid #a7f3d0',
+                                    padding: '0.3rem 0.65rem',
+                                    borderRadius: '6px'
+                                  }}
+                                  title="The primary Super Admin account is permanently locked against deletion"
+                                >
+                                  <Lock size={13} />
+                                  Protected (Undeletable)
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleDeleteAdmin(admin.id, admin.name)}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{
+                                    color: '#dc2626',
+                                    borderColor: '#fca5a5',
+                                    background: '#fff',
+                                    fontSize: '0.78rem',
+                                    padding: '0.35rem 0.75rem',
+                                    borderRadius: '6px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.35rem',
+                                    cursor: 'pointer'
+                                  }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff'; }}
+                                  title={`Remove ${admin.name} from admin team`}
+                                >
+                                  <Trash2 size={13} />
+                                  Remove Admin
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* ADD ADMINISTRATOR MODAL (SUPER ADMIN ONLY)                     */}
+        {/* ------------------------------------------------------------- */}
+        {showAddAdminModal && currentUser?.role === 'superadmin' && (
+          <div className="modal-overlay" onClick={() => setShowAddAdminModal(false)}>
+            <div 
+              className="modal-content glass-panel" 
+              onClick={e => e.stopPropagation()} 
+              style={{ padding: '1.75rem', maxWidth: '500px' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: '#e26d21',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Plus size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', color: '#1c1917', margin: 0, fontWeight: 700 }}>
+                      Add New Administrator
+                    </h3>
+                    <div style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                      Grant administrative portal access
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddAdminModal(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#78716c',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateAdmin}>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.84rem', fontWeight: 600, color: '#374151' }}>
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Falguni Barua"
+                    value={newAdminData.name}
+                    onChange={e => setNewAdminData({ ...newAdminData, name: e.target.value })}
+                    className="form-input"
+                    required
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.84rem', fontWeight: 600, color: '#374151' }}>
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="e.g. falguni@example.com"
+                    value={newAdminData.email}
+                    onChange={e => setNewAdminData({ ...newAdminData, email: e.target.value })}
+                    className="form-input"
+                    required
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.84rem', fontWeight: 600, color: '#374151' }}>
+                    Initial Password *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Create a strong password"
+                    value={newAdminData.password}
+                    onChange={e => setNewAdminData({ ...newAdminData, password: e.target.value })}
+                    className="form-input"
+                    required
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.84rem', fontWeight: 600, color: '#374151' }}>
+                    Role & Permission Tier
+                  </label>
+                  <select
+                    value={newAdminData.role}
+                    onChange={e => setNewAdminData({ ...newAdminData, role: e.target.value })}
+                    className="form-select"
+                    style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #d1d5db' }}
+                  >
+                    <option value="admin">Standard Admin (Website Operations Only)</option>
+                    <option value="superadmin">Super Admin (Full Access & User Management)</option>
+                  </select>
+                </div>
+
+                <div style={{
+                  padding: '0.75rem',
+                  background: '#faf8f5',
+                  borderRadius: '8px',
+                  border: '1px solid #e7e2db',
+                  fontSize: '0.78rem',
+                  color: '#78716c',
+                  marginBottom: '1.4rem'
+                }}>
+                  ℹ️ Standard Admins can operate catalog, orders, customer negotiations, and store settings,
+                  but will <strong>NOT</strong> have access to create or delete other admins.
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddAdminModal(false)}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    Create Administrator
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 
