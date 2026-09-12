@@ -185,7 +185,7 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
                   <span className="badge" style={{ background: '#e26d21', color: '#ffffff', fontWeight: 700, padding: '0.25rem 0.5rem' }}>
                     ৳ {featuredProduct?.price ? featuredProduct.price.toLocaleString() : '1,450'}
                   </span>
-                  <span style={{ fontSize: '0.72rem', color: '#e26d21', fontWeight: 600 }}>View 3D / Photos →</span>
+                  <span style={{ fontSize: '0.72rem', color: '#e26d21', fontWeight: 600 }}>View Photos →</span>
                 </div>
               </div>
             </div>

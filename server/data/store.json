@@ -6,7 +6,8 @@
     "whatsappNumber": "8801855636389",
     "email": "falgunihandcraft@gmail.com",
     "currency": "৳",
-    "announcement": "✨ Handcrafted with love: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order in your favorite colors and designs."
+    "announcement": "✨ Handcrafted with love: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order in your favorite colors and designs.",
+    "featuredProductId": "p-106"
   },
   "categories": [
     {
@@ -56,6 +57,14 @@
       "description": "Baby-safe nazariya black beads, soft chime silver bells, and smooth organic wooden beads.",
       "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80",
       "icon": "Baby"
+    },
+    {
+      "id": "test",
+      "name": "test",
+      "slug": "test",
+      "description": "test",
+      "image": "/uploads/item-1789184492218-ovwjp.jpg",
+      "icon": "Sparkles"
     }
   ],
   "products": [
@@ -278,7 +287,7 @@
       "id": "ORD-7730",
       "orderDate": "2026-09-11T04:28:41.201Z",
       "channel": "whatsapp",
-      "status": "Confirmed Sales",
+      "status": "Cancelled",
       "customer": {
         "name": "Shawon Barua",
         "phone": "01911053670",

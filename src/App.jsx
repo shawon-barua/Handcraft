@@ -11,10 +11,12 @@ import {
   RotateCcw, SlidersHorizontal, Phone, Mail, ArrowUp, X
 } from 'lucide-react';
 
+import fallbackData from './data/initialData.json';
+
 export default function App() {
-  const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [settings, setSettings] = useState({
+  const [categories, setCategories] = useState(fallbackData?.categories || []);
+  const [products, setProducts] = useState(fallbackData?.products || []);
+  const [settings, setSettings] = useState(fallbackData?.settings || {
     storeName: 'Falguni Handcraft',
     logo: '/logo.png',
     whatsappNumber: '8801855636389',
@@ -79,16 +81,16 @@ export default function App() {
   const loadData = async () => {
     try {
       const [catsRes, prodsRes, settingsRes] = await Promise.all([
-        fetch('/api/categories').then(r => r.json()),
-        fetch('/api/products').then(r => r.json()),
-        fetch('/api/settings').then(r => r.json())
+        fetch('/api/categories').then(r => (r.ok ? r.json() : null)).catch(() => null),
+        fetch('/api/products').then(r => (r.ok ? r.json() : null)).catch(() => null),
+        fetch('/api/settings').then(r => (r.ok ? r.json() : null)).catch(() => null)
       ]);
 
-      setCategories(catsRes);
-      setProducts(prodsRes);
-      setSettings(settingsRes);
+      if (Array.isArray(catsRes) && catsRes.length > 0) setCategories(catsRes);
+      if (Array.isArray(prodsRes) && prodsRes.length > 0) setProducts(prodsRes);
+      if (settingsRes && typeof settingsRes === 'object') setSettings(prev => ({ ...prev, ...settingsRes }));
     } catch (err) {
-      console.error('Error fetching storefront data:', err);
+      console.warn('Backend API not reachable; running with fallback catalog data:', err);
     }
   };
 
@@ -228,7 +230,7 @@ export default function App() {
               scrollToProducts();
             }}
             onScrollToProducts={scrollToProducts}
-            featuredProduct={products.find(p => p.id === 'p-101') || products[0]}
+            featuredProduct={products.find(p => p.id === settings?.featuredProductId) || products.find(p => p.id === 'p-101') || products[0]}
             onSelectProduct={setSelectedProductForDetail}
             settings={settings}
           />

@@ -48,23 +48,39 @@ export default function CheckoutModal({
     setIsSubmitting(true);
 
     try {
-      // 1. Submit order to backend API so Admin Panel records it immediately!
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      let order = null;
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer: formData,
+            items: cart,
+            channel: channel,
+            totalAmount: subtotal
+          })
+        });
+
+        if (response.ok) {
+          order = await response.json();
+        }
+      } catch (err) {
+        console.warn('Backend order recording skipped (running in static/offline mode):', err);
+      }
+
+      // Generate graceful client fallback order ID if backend is offline/static
+      if (!order) {
+        order = {
+          id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
           customer: formData,
           items: cart,
           channel: channel,
-          totalAmount: subtotal
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to record order on server');
+          totalAmount: subtotal,
+          status: 'Direct Message',
+          createdAt: new Date().toISOString()
+        };
       }
 
-      const order = await response.json();
       setCompletedOrder(order);
 
       // 2. Format detailed message for WhatsApp or Email

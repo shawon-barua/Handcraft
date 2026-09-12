@@ -143,8 +143,8 @@ export default function Navbar({
               />
             </div>
             <div>
-              <h1 className="navbar-brand-title" style={{ fontSize: '1.75rem', lineHeight: 1.1, color: '#1c1917', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.45rem', letterSpacing: '-0.01em', margin: 0 }}>
-                <span style={{ color: '#e26d21' }}>Falguni</span> Handcraft
+              <h1 className="navbar-brand-title" style={{ fontSize: '1.75rem', lineHeight: 1.1, color: '#000000', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.45rem', letterSpacing: '-0.01em', margin: 0 }}>
+                <span style={{ color: '#e26d21' }}>Falguni</span> <span style={{ color: '#000000' }}>Handcraft</span>
               </h1>
               <span className="navbar-brand-subtitle" style={{ fontSize: '0.74rem', color: '#78716c', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginTop: '2px' }}>
                 Aesthetic Bead, Thread & Clay Jewellery

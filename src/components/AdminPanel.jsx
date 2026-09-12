@@ -320,6 +320,8 @@ export default function AdminPanel({
               setNewProduct(prev => ({ ...prev, [fieldName]: data.url }));
             } else if (target === 'edit') {
               setEditingProduct(prev => ({ ...prev, [fieldName]: data.url }));
+            } else if (target === 'category') {
+              setNewCategory(prev => ({ ...prev, [fieldName]: data.url }));
             }
           } else {
             alert('Upload failed: ' + (data.error || 'Unknown error'));
@@ -1580,6 +1582,72 @@ export default function AdminPanel({
                 />
               </div>
 
+              {/* Hero Banner Featured / Focused Product Selector */}
+              <div className="form-group" style={{ background: '#faf8f5', border: '1px solid #e7e2db', borderRadius: 'var(--radius-sm)', padding: '1rem', marginTop: '1.25rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                  <label className="form-label" style={{ fontWeight: 700, margin: 0, color: '#1c1917' }}>
+                    🌟 Hero Banner Focused / Featured Product
+                  </label>
+                  <span style={{ fontSize: '0.75rem', color: '#e26d21', fontWeight: 600 }}>
+                    Flagship Showcase
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.75rem' }}>
+                  Choose which handcrafted jewelry piece is displayed prominently in the top Hero Banner on the homepage.
+                </span>
+
+                <select
+                  value={settings.featuredProductId || 'p-101'}
+                  onChange={e => setSettings({ ...settings, featuredProductId: e.target.value })}
+                  className="form-input"
+                  style={{ fontWeight: 600, color: '#1c1917', marginBottom: '0.75rem', background: '#ffffff' }}
+                >
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.title} — {currency}{p.price?.toLocaleString()} ({categories.find(c => c.slug === p.category || c.id === p.category)?.name || p.category})
+                    </option>
+                  ))}
+                </select>
+
+                {/* Live Preview Card of Chosen Item */}
+                {(() => {
+                  const focusedProd = products.find(p => p.id === (settings.featuredProductId || 'p-101')) || products[0];
+                  if (!focusedProd) return null;
+                  return (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.85rem',
+                      background: '#ffffff',
+                      border: '1px solid #e7e2db',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.65rem 0.85rem'
+                    }}>
+                      <div style={{ width: '52px', height: '52px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', flexShrink: 0, border: '1px solid #e2dcd5' }}>
+                        <img
+                          src={focusedProd.image}
+                          alt={focusedProd.title}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#1c1917', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {focusedProd.title}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#78716c', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '2px' }}>
+                          <span style={{ color: '#e26d21', fontWeight: 700 }}>{currency} {focusedProd.price?.toLocaleString()}</span>
+                          <span>•</span>
+                          <span>{categories.find(c => c.slug === focusedProd.category || c.id === focusedProd.category)?.name || focusedProd.category}</span>
+                        </div>
+                      </div>
+                      <span className="badge" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a', fontWeight: 700, fontSize: '0.72rem' }}>
+                        Active in Hero
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
+
               <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
                 <Save size={16} /> Save Settings
               </button>
@@ -1620,16 +1688,15 @@ export default function AdminPanel({
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Cover Image URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://images.unsplash.com/..."
-                    value={newCategory.image}
-                    onChange={e => setNewCategory({ ...newCategory, image: e.target.value })}
-                    className="form-input"
-                  />
-                </div>
+                <ImageUploadSlot
+                  label="Category Cover Image"
+                  helperText="Upload image from computer/phone or enter URL"
+                  value={newCategory.image}
+                  onChange={(val) => setNewCategory({ ...newCategory, image: val })}
+                  onUpload={(file) => handleUploadImageFile(file, 'category', 'image')}
+                  isUploading={uploadingKey === 'category-image'}
+                  required={false}
+                />
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem', marginTop: '1.5rem' }}>
                   <button
@@ -1734,19 +1801,19 @@ export default function AdminPanel({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <div>
                       <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1c1917', margin: 0 }}>
-                        📸 3 Product Pictures (Front, Side & Craft Details)
+                        Front , Close Up , Matching Product
                       </label>
                       <div style={{ fontSize: '0.75rem', color: '#78716c' }}>
                         Upload files directly from your computer or phone, or paste URLs.
                       </div>
                     </div>
                     <span style={{ fontSize: '0.75rem', color: '#e26d21', fontWeight: 600 }}>
-                      Multi-Angle Showcase
+                      Multi-Picture Showcase
                     </span>
                   </div>
 
                   <ImageUploadSlot
-                    label="Picture 1: Front / Primary View"
+                    label="Picture 1: Front View"
                     helperText="Main catalog thumbnail"
                     value={newProduct.image1}
                     onChange={(val) => setNewProduct({ ...newProduct, image1: val })}
@@ -1756,8 +1823,8 @@ export default function AdminPanel({
                   />
 
                   <ImageUploadSlot
-                    label="Picture 2: Side / Profile Angle View"
-                    helperText="Shows depth & wearing profile"
+                    label="Picture 2: Close Up View"
+                    helperText="Macro texture, clay or embroidery detail"
                     value={newProduct.image2}
                     onChange={(val) => setNewProduct({ ...newProduct, image2: val })}
                     onUpload={(file) => handleUploadImageFile(file, 'new', 'image2')}
@@ -1765,8 +1832,8 @@ export default function AdminPanel({
                   />
 
                   <ImageUploadSlot
-                    label="Picture 3: Craft / Macro Texture View"
-                    helperText="Close-up detail of clay or embroidery"
+                    label="Picture 3: Matching Product"
+                    helperText="Matching earrings, bracelet or set pieces"
                     value={newProduct.image3}
                     onChange={(val) => setNewProduct({ ...newProduct, image3: val })}
                     onUpload={(file) => handleUploadImageFile(file, 'new', 'image3')}
@@ -1883,19 +1950,19 @@ export default function AdminPanel({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <div>
                       <label style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1c1917', margin: 0 }}>
-                        📸 3 Product Pictures (Front, Side & Craft Details)
+                        Front , Close Up , Matching Product
                       </label>
                       <div style={{ fontSize: '0.75rem', color: '#78716c' }}>
                         Upload new photos from your computer or phone to replace existing ones.
                       </div>
                     </div>
                     <span style={{ fontSize: '0.75rem', color: '#e26d21', fontWeight: 600 }}>
-                      Multi-Angle Showcase
+                      Multi-Picture Showcase
                     </span>
                   </div>
 
                   <ImageUploadSlot
-                    label="Picture 1: Front / Primary View"
+                    label="Picture 1: Front View"
                     helperText="Main catalog thumbnail"
                     value={editingProduct.image1}
                     onChange={(val) => setEditingProduct({ ...editingProduct, image1: val })}
@@ -1905,8 +1972,8 @@ export default function AdminPanel({
                   />
 
                   <ImageUploadSlot
-                    label="Picture 2: Side / Profile Angle View"
-                    helperText="Shows depth & wearing profile"
+                    label="Picture 2: Close Up View"
+                    helperText="Macro texture, clay or embroidery detail"
                     value={editingProduct.image2}
                     onChange={(val) => setEditingProduct({ ...editingProduct, image2: val })}
                     onUpload={(file) => handleUploadImageFile(file, 'edit', 'image2')}
@@ -1914,8 +1981,8 @@ export default function AdminPanel({
                   />
 
                   <ImageUploadSlot
-                    label="Picture 3: Craft / Macro Texture View"
-                    helperText="Close-up detail of clay or embroidery"
+                    label="Picture 3: Matching Product"
+                    helperText="Matching earrings, bracelet or set pieces"
                     value={editingProduct.image3}
                     onChange={(val) => setEditingProduct({ ...editingProduct, image3: val })}
                     onUpload={(file) => handleUploadImageFile(file, 'edit', 'image3')}
