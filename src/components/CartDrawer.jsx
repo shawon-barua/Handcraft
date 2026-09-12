@@ -19,6 +19,7 @@ export default function CartDrawer({
   return (
     <div className="modal-overlay" onClick={onClose} style={{ justifyContent: 'flex-end', padding: 0 }}>
       <div
+        className="cart-drawer-panel"
         style={{
           width: '100%',
           maxWidth: '460px',

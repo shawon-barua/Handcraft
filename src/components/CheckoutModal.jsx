@@ -128,7 +128,7 @@ Hello, I would like to talk with you and confirm this order.`);
       <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px', background: '#ffffff' }}>
         {/* Header */}
         <div style={{
-          padding: '1.25rem 1.5rem',
+          padding: '1rem clamp(0.9rem, 3.5vw, 1.5rem)',
           borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           justifyContent: 'space-between',
@@ -163,7 +163,7 @@ Hello, I would like to talk with you and confirm this order.`);
         </div>
 
         {/* Content Area */}
-        <div style={{ padding: '1.5rem' }}>
+        <div style={{ padding: 'clamp(0.9rem, 3.5vw, 1.5rem)' }}>
           {completedOrder ? (
             /* Success View */
             <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>

@@ -234,24 +234,27 @@ export default function App() {
           }}>
             <div className="container">
               {/* Header & Filter Controls Bar */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '2.5rem',
-                flexWrap: 'wrap',
-                gap: '1rem',
-                borderBottom: '1px solid rgba(255,255,255,0.12)',
-                paddingBottom: '1.5rem'
-              }}>
+              <div 
+                className="catalog-controls-bar"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '2rem',
+                  flexWrap: 'wrap',
+                  gap: '1rem',
+                  borderBottom: '1px solid rgba(255,255,255,0.12)',
+                  paddingBottom: '1.5rem'
+                }}
+              >
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <span className="badge badge-gold">Handcrafted Catalog</span>
                     <span style={{ fontSize: '0.85rem', color: '#93c5fd' }}>
                       Showing {filteredProducts.length} artisan creation(s)
                     </span>
                   </div>
-                  <h2 style={{ fontSize: '2rem', color: '#ffffff', marginTop: '0.35rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
+                  <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2rem)', color: '#ffffff', marginTop: '0.35rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
                     {activeCategory === 'all'
                       ? 'Featured Handcrafted Collection'
                       : categories.find(c => c.slug === activeCategory || c.id === activeCategory)?.name || 'Collection'}
@@ -259,7 +262,7 @@ export default function App() {
                 </div>
 
                 {/* Sort Dropdown & Quick WhatsApp inquiry */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                <div className="catalog-sort-group" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#94a3b8' }}>
                     <SlidersHorizontal size={14} color="#38bdf8" /> Sort:
                   </div>
@@ -285,7 +288,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Products Grid (geobagbd layout) */}
+              {/* Products Grid */}
               {filteredProducts.length === 0 ? (
                 <div className="glass-panel" style={{
                   padding: '4rem 2rem',
@@ -308,11 +311,7 @@ export default function App() {
                   </button>
                 </div>
               ) : (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                  gap: '1.5rem'
-                }}>
+                <div className="products-grid-container">
                   {filteredProducts.map(product => (
                     <ProductCard
                       key={product.id}
@@ -337,10 +336,10 @@ export default function App() {
             borderBottom: '1px solid #e7e2db',
             padding: '3rem 0'
           }}>
-            <div className="container" style={{
+            <div className="container guarantee-grid" style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '2.5rem'
+              gap: '2rem'
             }}>
 
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -400,7 +399,7 @@ export default function App() {
         title="Chat on WhatsApp"
       >
         <MessageSquare size={18} />
-        <span>Chat with Us</span>
+        <span className="floating-whatsapp-text">Chat with Us</span>
       </a>
 
       {/* Footer (Aarong Signature Dark Charcoal Base with Orange Accents) */}

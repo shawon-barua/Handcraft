@@ -111,7 +111,7 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
       <div
-        className="modal-content"
+        className="modal-content product-detail-dialog"
         onClick={(e) => e.stopPropagation()}
         style={{
           maxWidth: '920px',
@@ -203,14 +203,9 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
         </div>
 
         {/* Modal Body: 2 Columns */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          overflowY: 'auto',
-          flex: 1
-        }}>
+        <div className="product-detail-grid">
           {/* Left Column: 3-Picture Gallery */}
-          <div style={{
+          <div className="product-detail-gallery-col" style={{
             padding: '1.5rem',
             background: '#fcfbfa',
             borderRight: '1px solid #e7e2db',
@@ -378,12 +373,15 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
           </div>
 
           {/* Right Column: Details & Actions */}
-          <div style={{
-            padding: '1.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }}>
+          <div 
+            className="product-detail-info-col"
+            style={{
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between'
+            }}
+          >
             <div>
               {/* Category & Stock */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
