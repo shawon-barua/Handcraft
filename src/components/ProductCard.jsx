@@ -68,6 +68,7 @@ export default function ProductCard({
           src={displayImage}
           alt={product.title}
           loading="lazy"
+          decoding="async"
           style={{
             position: 'absolute',
             top: 0,

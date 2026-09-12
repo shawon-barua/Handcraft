@@ -64,16 +64,26 @@ export default function AdminPanel({
 
   const [settingsSaved, setSettingsSaved] = useState(false);
 
+  // Authenticated fetch helper that automatically attaches JWT admin token
+  const authFetch = (url, options = {}) => {
+    const token = localStorage.getItem('falguni_admin_token');
+    const headers = {
+      ...(options.headers || {}),
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+    return fetch(url, { ...options, headers });
+  };
+
   // Fetch admin data
   const fetchData = async () => {
     setIsLoading(true);
     try {
       const [statsRes, ordersRes, catsRes, prodsRes, settingsRes] = await Promise.all([
-        fetch('/api/stats').then(r => r.json()),
-        fetch('/api/orders').then(r => r.json()),
-        fetch('/api/categories').then(r => r.json()),
-        fetch('/api/products').then(r => r.json()),
-        fetch('/api/settings').then(r => r.json())
+        authFetch('/api/stats').then(r => r.json()),
+        authFetch('/api/orders').then(r => r.json()),
+        authFetch('/api/categories').then(r => r.json()),
+        authFetch('/api/products').then(r => r.json()),
+        authFetch('/api/settings').then(r => r.json())
       ]);
 
       setStats(statsRes);
@@ -98,7 +108,7 @@ export default function AdminPanel({
   const fetchAdmins = async () => {
     setIsLoadingAdmins(true);
     try {
-      const res = await fetch('/api/auth/admins');
+      const res = await authFetch('/api/auth/admins');
       if (res.ok) {
         const data = await res.json();
         setAdminList(data);
@@ -134,7 +144,7 @@ export default function AdminPanel({
     }
 
     try {
-      const res = await fetch('/api/auth/admins', {
+      const res = await authFetch('/api/auth/admins', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newAdminData)
@@ -162,7 +172,7 @@ export default function AdminPanel({
     setAdminActionSuccess('');
 
     try {
-      const res = await fetch(`/api/auth/admins/${adminId}`, {
+      const res = await authFetch(`/api/auth/admins/${adminId}`, {
         method: 'DELETE'
       });
       const data = await res.json();
@@ -184,7 +194,7 @@ export default function AdminPanel({
     const adminName = currentUser?.name || currentUser?.email || 'Admin';
 
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await authFetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -199,7 +209,7 @@ export default function AdminPanel({
           setSaveStatus(prev => ({ ...prev, [orderId]: null }));
         }, 2000);
         // Refresh orders
-        const updated = await fetch('/api/orders').then(r => r.json());
+        const updated = await authFetch('/api/orders').then(r => r.json());
         setOrders(updated);
       }
     } catch (err) {
@@ -214,7 +224,7 @@ export default function AdminPanel({
     const adminName = currentUser?.name || currentUser?.email || 'Admin';
 
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await authFetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -226,8 +236,8 @@ export default function AdminPanel({
       if (res.ok) {
         // Refresh orders and stats
         const [updatedOrders, updatedStats] = await Promise.all([
-          fetch('/api/orders').then(r => r.json()),
-          fetch('/api/stats').then(r => r.json())
+          authFetch('/api/orders').then(r => r.json()),
+          authFetch('/api/stats').then(r => r.json())
         ]);
         setOrders(updatedOrders);
         setStats(updatedStats);
@@ -245,7 +255,7 @@ export default function AdminPanel({
     if (!newCategory.name.trim()) return;
 
     try {
-      const res = await fetch('/api/categories', {
+      const res = await authFetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCategory)
@@ -254,7 +264,7 @@ export default function AdminPanel({
       if (res.ok) {
         setShowAddCategoryModal(false);
         setNewCategory({ name: '', description: '', image: '', icon: 'Sparkles' });
-        const cats = await fetch('/api/categories').then(r => r.json());
+        const cats = await authFetch('/api/categories').then(r => r.json());
         setCategories(cats);
         if (onRefreshData) onRefreshData();
       }
@@ -267,9 +277,9 @@ export default function AdminPanel({
   const handleDeleteCategory = async (catId) => {
     if (!window.confirm('Are you sure you want to delete this category?')) return;
     try {
-      const res = await fetch(`/api/categories/${catId}`, { method: 'DELETE' });
+      const res = await authFetch(`/api/categories/${catId}`, { method: 'DELETE' });
       if (res.ok) {
-        const cats = await fetch('/api/categories').then(r => r.json());
+        const cats = await authFetch('/api/categories').then(r => r.json());
         setCategories(cats);
         if (onRefreshData) onRefreshData();
       }
@@ -285,7 +295,7 @@ export default function AdminPanel({
 
     try {
       const imagesList = [newProduct.image1, newProduct.image2, newProduct.image3].filter(Boolean);
-      const res = await fetch('/api/products', {
+      const res = await authFetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -313,7 +323,7 @@ export default function AdminPanel({
           image3: '',
           badges: ['Handcrafted']
         });
-        const prods = await fetch('/api/products').then(r => r.json());
+        const prods = await authFetch('/api/products').then(r => r.json());
         setProducts(prods);
         if (onRefreshData) onRefreshData();
       }
@@ -326,9 +336,9 @@ export default function AdminPanel({
   const handleDeleteProduct = async (prodId) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
-      const res = await fetch(`/api/products/${prodId}`, { method: 'DELETE' });
+      const res = await authFetch(`/api/products/${prodId}`, { method: 'DELETE' });
       if (res.ok) {
-        const prods = await fetch('/api/products').then(r => r.json());
+        const prods = await authFetch('/api/products').then(r => r.json());
         setProducts(prods);
         if (onRefreshData) onRefreshData();
       }
@@ -367,7 +377,7 @@ export default function AdminPanel({
 
     try {
       const imagesList = [editingProduct.image1, editingProduct.image2, editingProduct.image3].filter(Boolean);
-      const res = await fetch(`/api/products/${editingProduct.id}`, {
+      const res = await authFetch(`/api/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -383,7 +393,7 @@ export default function AdminPanel({
       if (res.ok) {
         setShowEditProductModal(false);
         setEditingProduct(null);
-        const prods = await fetch('/api/products').then(r => r.json());
+        const prods = await authFetch('/api/products').then(r => r.json());
         setProducts(prods);
         if (onRefreshData) onRefreshData();
       }
@@ -403,7 +413,7 @@ export default function AdminPanel({
       reader.onload = async (event) => {
         try {
           const base64Data = event.target.result;
-          const res = await fetch('/api/upload', {
+          const res = await authFetch('/api/upload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -441,7 +451,7 @@ export default function AdminPanel({
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/settings', {
+      const res = await authFetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)

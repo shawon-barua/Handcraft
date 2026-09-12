@@ -115,6 +115,8 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
                 src={featuredProduct?.image || "/terracotta-lotus-choker.jpg"}
                 alt={featuredProduct?.title || "Terracotta Lotus Choker Set"}
                 className="hero-image-box"
+                fetchPriority="high"
+                decoding="async"
                 style={{
                   width: '100%',
                   height: '380px',

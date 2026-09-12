@@ -3,17 +3,49 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import compression from 'compression';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5005;
+const JWT_SECRET = process.env.JWT_SECRET || 'falguni-artisan-super-secret-key-2026';
 
+// -------------------------------------------------------------
+// PERFORMANCE & SECURITY MIDDLEWARE
+// -------------------------------------------------------------
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
+app.use(compression());
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Rate Limiters
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Please try again in 15 minutes.' }
+});
+
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many orders submitted. Please try again shortly.' }
+});
+
+// Paths
 const DATA_DIR = path.join(__dirname, 'data');
 const STORE_FILE = path.join(DATA_DIR, 'store.json');
 const INITIAL_FILE = path.join(DATA_DIR, 'initialData.json');
@@ -22,10 +54,130 @@ const UPLOADS_DIR = path.join(__dirname, '../public/uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
-app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 
-// Image Upload Endpoint (Base64 file upload)
-app.post('/api/upload', (req, res) => {
+// -------------------------------------------------------------
+// IN-MEMORY STORE CACHING & ASYNC PERSISTENCE
+// -------------------------------------------------------------
+let memoryStore = null;
+let saveTimer = null;
+
+function saveStoreSync(data) {
+  try {
+    fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error synchronously saving store file:', err);
+  }
+}
+
+function loadStore() {
+  if (memoryStore) return memoryStore;
+
+  try {
+    let storeData;
+    if (!fs.existsSync(STORE_FILE)) {
+      const initialData = fs.readFileSync(INITIAL_FILE, 'utf-8');
+      fs.writeFileSync(STORE_FILE, initialData, 'utf-8');
+      storeData = JSON.parse(initialData);
+    } else {
+      const data = fs.readFileSync(STORE_FILE, 'utf-8');
+      storeData = JSON.parse(data);
+    }
+
+    // Guarantee default Super Admin exists with bcrypt hashed password
+    if (!storeData.admins || !Array.isArray(storeData.admins) || storeData.admins.length === 0) {
+      storeData.admins = [
+        {
+          id: 'admin-super-01',
+          name: 'Shawon (Super Admin)',
+          email: 'shawon.cse.ku@gmail.com',
+          password: bcrypt.hashSync('superadmin123', 10),
+          role: 'superadmin',
+          createdAt: new Date().toISOString()
+        }
+      ];
+      saveStoreSync(storeData);
+    } else {
+      let migrated = false;
+      // Upgrade plaintext passwords to bcrypt
+      storeData.admins.forEach(admin => {
+        if (admin.password && !admin.password.startsWith('$2a$') && !admin.password.startsWith('$2b$')) {
+          admin.password = bcrypt.hashSync(admin.password, 10);
+          migrated = true;
+        }
+      });
+
+      // Ensure primary superadmin role
+      const superAdminIndex = storeData.admins.findIndex(
+        a => a.id === 'admin-super-01' || a.email.toLowerCase() === 'shawon.cse.ku@gmail.com'
+      );
+      if (superAdminIndex !== -1 && storeData.admins[superAdminIndex].role !== 'superadmin') {
+        storeData.admins[superAdminIndex].role = 'superadmin';
+        migrated = true;
+      }
+
+      if (migrated) {
+        saveStoreSync(storeData);
+      }
+    }
+
+    memoryStore = storeData;
+    return memoryStore;
+  } catch (err) {
+    console.error('Error reading store file:', err);
+    memoryStore = { categories: [], products: [], orders: [], settings: {}, admins: [] };
+    return memoryStore;
+  }
+}
+
+function saveStore(data) {
+  memoryStore = data;
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      await fs.promises.writeFile(STORE_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (err) {
+      console.error('Error asynchronously saving store file:', err);
+    }
+  }, 100);
+}
+
+// Preload store on boot
+loadStore();
+
+// -------------------------------------------------------------
+// AUTHENTICATION & AUTHORIZATION MIDDLEWARE
+// -------------------------------------------------------------
+function requireAdmin(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid or expired token' });
+  }
+}
+
+function requireSuperAdmin(req, res, next) {
+  requireAdmin(req, res, () => {
+    if (req.user?.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Forbidden: Super Admin privileges required' });
+    }
+    next();
+  });
+}
+
+// -------------------------------------------------------------
+// FILE UPLOAD (Hardened image-only upload)
+// -------------------------------------------------------------
+app.post('/api/upload', requireAdmin, (req, res) => {
   try {
     const { image, filename } = req.body;
     if (!image) {
@@ -37,17 +189,24 @@ app.post('/api/upload', (req, res) => {
       return res.status(400).json({ error: 'Invalid base64 image data' });
     }
 
-    const mimeType = matches[1];
+    const mimeType = matches[1].toLowerCase();
     const base64Data = matches[2];
     const buffer = Buffer.from(base64Data, 'base64');
 
-    let ext = '.jpg';
-    if (mimeType.includes('png')) ext = '.png';
-    else if (mimeType.includes('webp')) ext = '.webp';
-    else if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = '.jpg';
-    else if (filename) {
-      const originalExt = path.extname(filename);
-      if (originalExt) ext = originalExt;
+    const mimeToExt = {
+      'image/jpeg': '.jpg',
+      'image/jpg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp'
+    };
+
+    const ext = mimeToExt[mimeType];
+    if (!ext) {
+      return res.status(400).json({ error: 'Invalid format. Only JPEG, PNG, and WEBP images are permitted.' });
+    }
+
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Image file size exceeds maximum limit of 10MB' });
     }
 
     const safeName = `item-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${ext}`;
@@ -63,62 +222,10 @@ app.post('/api/upload', (req, res) => {
   }
 });
 
-// Initialize store if not present
-function loadStore() {
-  try {
-    let storeData;
-    if (!fs.existsSync(STORE_FILE)) {
-      const initialData = fs.readFileSync(INITIAL_FILE, 'utf-8');
-      fs.writeFileSync(STORE_FILE, initialData, 'utf-8');
-      storeData = JSON.parse(initialData);
-    } else {
-      const data = fs.readFileSync(STORE_FILE, 'utf-8');
-      storeData = JSON.parse(data);
-    }
-
-    // Guarantee default Super Admin exists and is protected
-    if (!storeData.admins || !Array.isArray(storeData.admins) || storeData.admins.length === 0) {
-      storeData.admins = [
-        {
-          id: 'admin-super-01',
-          name: 'Shawon (Super Admin)',
-          email: 'shawon.cse.ku@gmail.com',
-          password: 'superadmin123',
-          role: 'superadmin',
-          createdAt: new Date().toISOString()
-        }
-      ];
-      saveStore(storeData);
-    } else {
-      // Ensure primary superadmin has role 'superadmin'
-      const superAdminIndex = storeData.admins.findIndex(
-        a => a.id === 'admin-super-01' || a.email.toLowerCase() === 'shawon.cse.ku@gmail.com'
-      );
-      if (superAdminIndex !== -1 && storeData.admins[superAdminIndex].role !== 'superadmin') {
-        storeData.admins[superAdminIndex].role = 'superadmin';
-        saveStore(storeData);
-      }
-    }
-
-    return storeData;
-  } catch (err) {
-    console.error('Error reading store file:', err);
-    return { categories: [], products: [], orders: [], settings: {}, admins: [] };
-  }
-}
-
-function saveStore(data) {
-  try {
-    fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error saving store file:', err);
-  }
-}
-
 // -------------------------------------------------------------
 // AUTHENTICATION & ADMIN MANAGEMENT
 // -------------------------------------------------------------
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', loginLimiter, (req, res) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
@@ -128,22 +235,42 @@ app.post('/api/auth/login', (req, res) => {
     const db = loadStore();
     const normalizedInput = email.trim().toLowerCase();
 
-    // Find admin matching email or username
     const admin = (db.admins || []).find(a => 
       a.email.toLowerCase() === normalizedInput ||
       (a.username && a.username.toLowerCase() === normalizedInput)
     );
 
-    if (!admin || admin.password !== password) {
+    if (!admin) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Success: return safe user info (exclude password)
+    // Password verification with bcrypt & legacy upgrade
+    let isMatch = false;
+    if (admin.password.startsWith('$2a$') || admin.password.startsWith('$2b$')) {
+      isMatch = bcrypt.compareSync(password, admin.password);
+    } else {
+      isMatch = admin.password === password;
+      if (isMatch) {
+        admin.password = bcrypt.hashSync(password, 10);
+        saveStore(db);
+      }
+    }
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const token = jwt.sign(
+      { id: admin.id, name: admin.name, email: admin.email, role: admin.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     const { password: _, ...safeUser } = admin;
     res.json({
       success: true,
       user: safeUser,
-      token: `admin-token-${admin.id}-${Date.now()}`
+      token
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -151,8 +278,8 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
-// List admins (passwords omitted)
-app.get('/api/auth/admins', (req, res) => {
+// List admins (Protected: Admin only)
+app.get('/api/auth/admins', requireAdmin, (req, res) => {
   try {
     const db = loadStore();
     const safeAdmins = (db.admins || []).map(({ password, ...rest }) => rest);
@@ -163,8 +290,8 @@ app.get('/api/auth/admins', (req, res) => {
   }
 });
 
-// Create new admin (Superadmin capability)
-app.post('/api/auth/admins', (req, res) => {
+// Create new admin (Protected: Super Admin only)
+app.post('/api/auth/admins', requireSuperAdmin, (req, res) => {
   try {
     const { name, email, password, role } = req.body || {};
     if (!name || !email || !password) {
@@ -184,7 +311,7 @@ app.post('/api/auth/admins', (req, res) => {
       id: `admin-${Date.now()}`,
       name: name.trim(),
       email: normalizedEmail,
-      password: password.trim(),
+      password: bcrypt.hashSync(password.trim(), 10),
       role: role === 'superadmin' ? 'superadmin' : 'admin',
       createdAt: new Date().toISOString()
     };
@@ -200,8 +327,8 @@ app.post('/api/auth/admins', (req, res) => {
   }
 });
 
-// Delete an admin account (Protected: Cannot delete Super Admin)
-app.delete('/api/auth/admins/:id', (req, res) => {
+// Delete an admin account (Protected: Super Admin only)
+app.delete('/api/auth/admins/:id', requireSuperAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const db = loadStore();
@@ -214,7 +341,6 @@ app.delete('/api/auth/admins/:id', (req, res) => {
 
     const target = db.admins[targetIndex];
 
-    // STRICT PROTECTION: Cannot delete Super Admin
     if (
       target.role === 'superadmin' || 
       target.id === 'admin-super-01' || 
@@ -243,7 +369,7 @@ app.get('/api/settings', (req, res) => {
   res.json(db.settings || {});
 });
 
-app.post('/api/settings', (req, res) => {
+app.post('/api/settings', requireAdmin, (req, res) => {
   const db = loadStore();
   db.settings = { ...db.settings, ...req.body };
   saveStore(db);
@@ -255,7 +381,6 @@ app.post('/api/settings', (req, res) => {
 // -------------------------------------------------------------
 app.get('/api/categories', (req, res) => {
   const db = loadStore();
-  // Attach product count to each category
   const categoriesWithCounts = (db.categories || []).map(cat => {
     const count = (db.products || []).filter(p => p.category === cat.slug || p.category === cat.id).length;
     return { ...cat, productCount: count };
@@ -263,7 +388,7 @@ app.get('/api/categories', (req, res) => {
   res.json(categoriesWithCounts);
 });
 
-app.post('/api/categories', (req, res) => {
+app.post('/api/categories', requireAdmin, (req, res) => {
   const db = loadStore();
   const { name, description, image, icon } = req.body;
   if (!name) {
@@ -285,7 +410,7 @@ app.post('/api/categories', (req, res) => {
   res.status(201).json(newCat);
 });
 
-app.put('/api/categories/:id', (req, res) => {
+app.put('/api/categories/:id', requireAdmin, (req, res) => {
   const db = loadStore();
   const index = db.categories.findIndex(c => c.id === req.params.id || c.slug === req.params.id);
   if (index === -1) {
@@ -297,7 +422,7 @@ app.put('/api/categories/:id', (req, res) => {
   res.json(db.categories[index]);
 });
 
-app.delete('/api/categories/:id', (req, res) => {
+app.delete('/api/categories/:id', requireAdmin, (req, res) => {
   const db = loadStore();
   const id = req.params.id;
   db.categories = db.categories.filter(c => c.id !== id && c.slug !== id);
@@ -344,7 +469,7 @@ app.get('/api/products/:id', (req, res) => {
   res.json(product);
 });
 
-app.post('/api/products', (req, res) => {
+app.post('/api/products', requireAdmin, (req, res) => {
   const db = loadStore();
   const { title, category, price, description, materials, image, images, image1, image2, image3, stock, originalPrice, badges } = req.body;
 
@@ -352,7 +477,6 @@ app.post('/api/products', (req, res) => {
     return res.status(400).json({ error: 'Title, category, and price are required' });
   }
 
-  // Assemble 3 separate images
   let productImages = [];
   if (Array.isArray(images) && images.length > 0) {
     productImages = images.filter(Boolean);
@@ -369,14 +493,14 @@ app.post('/api/products', (req, res) => {
 
   const newProduct = {
     id: `p-${Date.now()}`,
-    title,
-    category,
-    price: Number(price),
-    originalPrice: originalPrice ? Number(originalPrice) : Math.round(Number(price) * 1.25),
+    title: String(title).trim(),
+    category: String(category).trim(),
+    price: Math.max(0, Number(price)),
+    originalPrice: originalPrice ? Math.max(0, Number(originalPrice)) : Math.round(Number(price) * 1.25),
     description: description || 'Beautiful handcrafted artisan piece made with premium traditional materials.',
     materials: materials || 'Handcrafted Organic Materials',
     badges: badges && badges.length ? badges : ['Handcrafted'],
-    stock: stock !== undefined ? Number(stock) : 10,
+    stock: stock !== undefined ? Math.max(0, Number(stock)) : 10,
     rating: 5.0,
     images: productImages.slice(0, 3),
     image: productImages[0]
@@ -387,7 +511,7 @@ app.post('/api/products', (req, res) => {
   res.status(201).json(newProduct);
 });
 
-app.put('/api/products/:id', (req, res) => {
+app.put('/api/products/:id', requireAdmin, (req, res) => {
   const db = loadStore();
   const index = db.products.findIndex(p => p.id === req.params.id);
   if (index === -1) {
@@ -395,11 +519,10 @@ app.put('/api/products/:id', (req, res) => {
   }
 
   const updates = { ...req.body };
-  if (req.body.price !== undefined) updates.price = Number(req.body.price);
-  if (req.body.originalPrice !== undefined) updates.originalPrice = Number(req.body.originalPrice);
-  if (req.body.stock !== undefined) updates.stock = Number(req.body.stock);
+  if (req.body.price !== undefined) updates.price = Math.max(0, Number(req.body.price));
+  if (req.body.originalPrice !== undefined) updates.originalPrice = Math.max(0, Number(req.body.originalPrice));
+  if (req.body.stock !== undefined) updates.stock = Math.max(0, Number(req.body.stock));
 
-  // Handle images update
   if (req.body.images && Array.isArray(req.body.images)) {
     updates.images = req.body.images.filter(Boolean).slice(0, 3);
     if (updates.images.length > 0) updates.image = updates.images[0];
@@ -409,12 +532,11 @@ app.put('/api/products/:id', (req, res) => {
   }
 
   db.products[index] = { ...db.products[index], ...updates };
-
   saveStore(db);
   res.json(db.products[index]);
 });
 
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/api/products/:id', requireAdmin, (req, res) => {
   const db = loadStore();
   db.products = db.products.filter(p => p.id !== req.params.id);
   saveStore(db);
@@ -422,45 +544,54 @@ app.delete('/api/products/:id', (req, res) => {
 });
 
 // -------------------------------------------------------------
-// ORDERS & CHECKOUT
+// ORDERS & CHECKOUT (Protected Orders List + Verified Calculation)
 // -------------------------------------------------------------
-app.get('/api/orders', (req, res) => {
+app.get('/api/orders', requireAdmin, (req, res) => {
   const db = loadStore();
-  // Return sorted newest first
   const orders = [...(db.orders || [])].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
   res.json(orders);
 });
 
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', orderLimiter, (req, res) => {
   const db = loadStore();
-  const { customer, items, channel, totalAmount } = req.body;
+  const { customer, items, channel } = req.body;
 
-  if (!customer || !items || !items.length) {
+  if (!customer || !items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Customer info and items are required' });
   }
 
+  // Recalculate price server-side from product catalog to prevent price tampering
+  const verifiedItems = items.map(item => {
+    const dbProd = (db.products || []).find(p => p.id === item.id);
+    const verifiedPrice = dbProd ? Number(dbProd.price) : (Number(item.price) || 0);
+    const quantity = Math.max(1, Math.min(Number(item.quantity) || 1, 100));
+    return {
+      id: item.id,
+      title: dbProd ? dbProd.title : String(item.title || 'Handcrafted Item'),
+      price: verifiedPrice,
+      quantity,
+      image: dbProd ? dbProd.image : String(item.image || '')
+    };
+  });
+
+  const verifiedTotal = verifiedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const orderNumber = Math.floor(1000 + Math.random() * 9000);
+
   const newOrder = {
     id: `ORD-${orderNumber}`,
     orderDate: new Date().toISOString(),
     channel: channel || 'whatsapp',
     status: 'In Negotiation',
     customer: {
-      name: customer.name || 'Anonymous Customer',
-      phone: customer.phone || '',
-      address: customer.address || '',
-      city: customer.city || 'Dhaka',
-      notes: customer.notes || ''
+      name: String(customer.name || 'Anonymous Customer').slice(0, 100),
+      phone: String(customer.phone || '').slice(0, 30),
+      address: String(customer.address || '').slice(0, 250),
+      city: String(customer.city || 'Dhaka').slice(0, 50),
+      notes: String(customer.notes || '').slice(0, 500)
     },
-    items: items.map(item => ({
-      id: item.id,
-      title: item.title,
-      price: item.price,
-      quantity: item.quantity || 1,
-      image: item.image || ''
-    })),
-    totalAmount: totalAmount || items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0),
-    specialNote: '' // Empty by default, ready for admin to annotate!
+    items: verifiedItems,
+    totalAmount: verifiedTotal,
+    specialNote: ''
   };
 
   db.orders.unshift(newOrder);
@@ -468,7 +599,7 @@ app.post('/api/orders', (req, res) => {
   res.status(201).json(newOrder);
 });
 
-app.patch('/api/orders/:id', (req, res) => {
+app.patch('/api/orders/:id', requireAdmin, (req, res) => {
   const db = loadStore();
   const order = db.orders.find(o => o.id === req.params.id);
   if (!order) {
@@ -479,8 +610,7 @@ app.patch('/api/orders/:id', (req, res) => {
     const oldStatus = order.status;
     order.status = req.body.status;
 
-    // Record which admin marked this status change
-    const updater = req.body.updatedBy || req.body.changedBy || 'Admin';
+    const updater = req.body.updatedBy || req.body.changedBy || req.user?.name || 'Admin';
     const updaterName = typeof updater === 'object' 
       ? (updater.name || updater.email || 'Admin') 
       : String(updater).trim();
@@ -515,7 +645,7 @@ app.patch('/api/orders/:id', (req, res) => {
   }
 
   if (req.body.totalAmount !== undefined) {
-    order.totalAmount = Number(req.body.totalAmount);
+    order.totalAmount = Math.max(0, Number(req.body.totalAmount));
   }
 
   saveStore(db);
@@ -523,9 +653,9 @@ app.patch('/api/orders/:id', (req, res) => {
 });
 
 // -------------------------------------------------------------
-// ADMIN STATS & ANALYTICS
+// ADMIN STATS & ANALYTICS (Protected)
 // -------------------------------------------------------------
-app.get('/api/stats', (req, res) => {
+app.get('/api/stats', requireAdmin, (req, res) => {
   const db = loadStore();
   const orders = db.orders || [];
   const products = db.products || [];
@@ -533,7 +663,6 @@ app.get('/api/stats', (req, res) => {
 
   const totalOrders = orders.length;
 
-  // Calculate total sale from confirmed sales
   const confirmedOrCompletedOrders = orders.filter(o =>
     o.status === 'Confirmed' || o.status === 'Confirmed Sales'
   );
@@ -545,7 +674,6 @@ app.get('/api/stats', (req, res) => {
 
   const inNegotiationCount = orders.filter(o => o.status === 'In Negotiation' || o.status === 'Active Negotiation').length;
 
-  // Category breakdown
   const categoryStats = categories.map(cat => {
     const catProducts = products.filter(p => p.category === cat.slug || p.category === cat.id);
     let orderCountForCat = 0;
@@ -578,10 +706,22 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// Serve Frontend Static Build in Production
+// -------------------------------------------------------------
+// STATIC FRONTEND SERVING WITH CACHING & COMPRESSION
+// -------------------------------------------------------------
 const DIST_DIR = path.join(__dirname, '../dist');
 if (fs.existsSync(DIST_DIR)) {
-  app.use(express.static(DIST_DIR));
+  // 1-year immutable caching for hashed assets
+  app.use('/assets', express.static(path.join(DIST_DIR, 'assets'), {
+    maxAge: '1y',
+    immutable: true
+  }));
+
+  // General static file cache
+  app.use(express.static(DIST_DIR, {
+    maxAge: '1h'
+  }));
+
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
       return next();
@@ -591,5 +731,5 @@ if (fs.existsSync(DIST_DIR)) {
 }
 
 app.listen(PORT, () => {
-  console.log(`✨ Handcrafted Store running on http://localhost:${PORT}`);
+  console.log(`✨ Handcrafted Store running securely on http://localhost:${PORT}`);
 });

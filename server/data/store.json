@@ -279,7 +279,7 @@
       "id": "ORD-6037",
       "orderDate": "2026-09-12T08:09:48.625Z",
       "channel": "email",
-      "status": "Confirmed Sales",
+      "status": "Cancelled",
       "customer": {
         "name": "Direct Email Inquiry",
         "phone": "",
@@ -297,7 +297,21 @@
         }
       ],
       "totalAmount": 890,
-      "specialNote": ""
+      "specialNote": "",
+      "statusUpdatedBy": "Shawon (Super Admin)",
+      "statusUpdatedAt": "2026-09-12T09:26:22.718Z",
+      "statusHistory": [
+        {
+          "status": "Confirmed Sales",
+          "changedBy": "Shawon (Super Admin)",
+          "at": "2026-09-12T08:09:48.625Z"
+        },
+        {
+          "status": "Cancelled",
+          "changedBy": "Shawon (Super Admin)",
+          "at": "2026-09-12T09:26:22.718Z"
+        }
+      ]
     },
     {
       "id": "ORD-3597",
@@ -327,7 +341,7 @@
       "id": "ORD-2102",
       "orderDate": "2026-09-12T08:03:29.508Z",
       "channel": "email",
-      "status": "In Negotiation",
+      "status": "Confirmed Sales",
       "customer": {
         "name": "Direct Email Inquiry",
         "phone": "",
@@ -345,13 +359,27 @@
         }
       ],
       "totalAmount": 890,
-      "specialNote": ""
+      "specialNote": "",
+      "statusUpdatedBy": "Falguni Barua",
+      "statusUpdatedAt": "2026-09-12T09:24:56.937Z",
+      "statusHistory": [
+        {
+          "status": "In Negotiation",
+          "changedBy": "Falguni Barua",
+          "at": "2026-09-12T08:03:29.508Z"
+        },
+        {
+          "status": "Confirmed Sales",
+          "changedBy": "Falguni Barua",
+          "at": "2026-09-12T09:24:56.937Z"
+        }
+      ]
     },
     {
       "id": "ORD-7730",
       "orderDate": "2026-09-11T04:28:41.201Z",
       "channel": "whatsapp",
-      "status": "Active Negotiation",
+      "status": "Cancelled",
       "customer": {
         "name": "Shawon Barua",
         "phone": "01911053670",
@@ -383,13 +411,32 @@
         }
       ],
       "totalAmount": 6140,
-      "specialNote": ""
+      "specialNote": "",
+      "statusUpdatedBy": "Falguni Barua",
+      "statusUpdatedAt": "2026-09-12T09:25:22.762Z",
+      "statusHistory": [
+        {
+          "status": "Active Negotiation",
+          "changedBy": "Falguni Barua",
+          "at": "2026-09-11T04:28:41.201Z"
+        },
+        {
+          "status": "Confirmed Sales",
+          "changedBy": "Falguni Barua",
+          "at": "2026-09-12T09:25:04.182Z"
+        },
+        {
+          "status": "Cancelled",
+          "changedBy": "Falguni Barua",
+          "at": "2026-09-12T09:25:22.762Z"
+        }
+      ]
     },
     {
       "id": "ORD-1875",
       "orderDate": "2026-09-10T04:32:12.451Z",
       "channel": "email",
-      "status": "Confirmed Sales",
+      "status": "Cancelled",
       "customer": {
         "name": "Shawon Barua",
         "phone": "01911053670",
@@ -414,7 +461,21 @@
         }
       ],
       "totalAmount": 3060,
-      "specialNote": ""
+      "specialNote": "",
+      "statusUpdatedBy": "Falguni Barua",
+      "statusUpdatedAt": "2026-09-12T09:25:29.591Z",
+      "statusHistory": [
+        {
+          "status": "Confirmed Sales",
+          "changedBy": "Falguni Barua",
+          "at": "2026-09-10T04:32:12.451Z"
+        },
+        {
+          "status": "Cancelled",
+          "changedBy": "Falguni Barua",
+          "at": "2026-09-12T09:25:29.591Z"
+        }
+      ]
     },
     {
       "id": "ORD-1001",
@@ -503,7 +564,7 @@
       "id": "admin-super-01",
       "name": "Shawon (Super Admin)",
       "email": "shawon.cse.ku@gmail.com",
-      "password": "superadmin123",
+      "password": "$2b$10$QvX6UCSylB2DtqHb7N/jxOX1hOgJg4WE1183Ida17a2dxjOlhV5.S",
       "role": "superadmin",
       "createdAt": "2026-09-12T00:00:00.000Z"
     },
@@ -511,7 +572,7 @@
       "id": "admin-1789204279551",
       "name": "Falguni Barua",
       "email": "falgunisdesign@gmail.com",
-      "password": "admin123",
+      "password": "$2b$10$K2r7PvZdGtOp1PDP6k5zNeJwLWpjEUsbAq/2mIN4ytF551DfkCp/q",
       "role": "admin",
       "createdAt": "2026-09-12T09:11:19.551Z"
     }

@@ -5,7 +5,7 @@ import ProductCard from './components/ProductCard';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
 import ProductDetailModal from './components/ProductDetailModal';
-import AdminPanel from './components/AdminPanel';
+const AdminPanel = React.lazy(() => import('./components/AdminPanel'));
 import AdminLoginModal from './components/AdminLoginModal';
 import { 
   Sparkles, MessageSquare, ShoppingBag, Heart, ShieldCheck, 
@@ -263,12 +263,19 @@ export default function App() {
 
       {/* Main Content: Storefront or Admin Panel */}
       {isAdminMode && currentUser ? (
-        <AdminPanel
-          initialSettings={settings}
-          onRefreshData={loadData}
-          currency={currency}
-          currentUser={currentUser}
-        />
+        <React.Suspense fallback={
+          <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: '#78716c' }}>
+            <div style={{ width: '36px', height: '36px', border: '3px solid #e7e5e4', borderTopColor: '#e26d21', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+            <p style={{ fontWeight: 500, fontSize: '0.95rem' }}>Loading Admin Console...</p>
+          </div>
+        }>
+          <AdminPanel
+            initialSettings={settings}
+            onRefreshData={loadData}
+            currency={currency}
+            currentUser={currentUser}
+          />
+        </React.Suspense>
       ) : (
         <main style={{ flex: 1 }}>
           {/* Hero Banner with Categories Showcase */}
