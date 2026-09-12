@@ -475,12 +475,45 @@ app.patch('/api/orders/:id', (req, res) => {
     return res.status(404).json({ error: 'Order not found' });
   }
 
+  if (req.body.status !== undefined) {
+    const oldStatus = order.status;
+    order.status = req.body.status;
+
+    // Record which admin marked this status change
+    const updater = req.body.updatedBy || req.body.changedBy || 'Admin';
+    const updaterName = typeof updater === 'object' 
+      ? (updater.name || updater.email || 'Admin') 
+      : String(updater).trim();
+
+    order.statusUpdatedBy = updaterName;
+    order.statusUpdatedAt = new Date().toISOString();
+
+    if (!Array.isArray(order.statusHistory)) {
+      order.statusHistory = [];
+      if (oldStatus) {
+        order.statusHistory.push({
+          status: oldStatus,
+          changedBy: order.statusUpdatedBy || 'System / Initial Order',
+          at: order.orderDate || new Date().toISOString()
+        });
+      }
+    }
+
+    order.statusHistory.push({
+      status: req.body.status,
+      changedBy: updaterName,
+      at: new Date().toISOString()
+    });
+  }
+
   if (req.body.specialNote !== undefined) {
     order.specialNote = req.body.specialNote;
+    if (req.body.noteUpdatedBy) {
+      order.noteUpdatedBy = String(req.body.noteUpdatedBy).trim();
+      order.noteUpdatedAt = new Date().toISOString();
+    }
   }
-  if (req.body.status !== undefined) {
-    order.status = req.body.status;
-  }
+
   if (req.body.totalAmount !== undefined) {
     order.totalAmount = Number(req.body.totalAmount);
   }

@@ -279,7 +279,7 @@
       "id": "ORD-6037",
       "orderDate": "2026-09-12T08:09:48.625Z",
       "channel": "email",
-      "status": "In Negotiation",
+      "status": "Confirmed Sales",
       "customer": {
         "name": "Direct Email Inquiry",
         "phone": "",
@@ -443,13 +443,18 @@
         }
       ],
       "totalAmount": 2690,
-      "specialNote": "Customer requested maroon colorway. Agreed on ৳2,500 over WhatsApp negotiation. Preparing packaging."
+      "statusUpdatedBy": "Falguni",
+      "statusUpdatedAt": "2026-09-10T14:20:00.000Z",
+      "specialNote": "Customer requested maroon colorway. Agreed on ৳2,500 over WhatsApp negotiation. Preparing packaging.",
+      "noteUpdatedBy": "Falguni"
     },
     {
       "id": "ORD-1002",
       "orderDate": "2026-09-09T18:15:00.000Z",
       "channel": "email",
       "status": "Confirmed Sales",
+      "statusUpdatedBy": "Falguni",
+      "statusUpdatedAt": "2026-09-12T09:22:47.531Z",
       "customer": {
         "name": "Tanvir Ahmed",
         "phone": "+8801711998877",
@@ -472,7 +477,25 @@
         }
       ],
       "totalAmount": 1640,
-      "specialNote": "Confirmed via WhatsApp call. Gift wrap requested with greeting card. Scheduled delivery via Pathao Courier."
+      "specialNote": "Confirmed via WhatsApp call. Gift wrap requested with greeting card. Scheduled delivery via Pathao Courier.",
+      "noteUpdatedBy": "Shawon",
+      "statusHistory": [
+        {
+          "status": "Confirmed Sales",
+          "changedBy": "Shawon",
+          "at": "2026-09-09T18:15:00.000Z"
+        },
+        {
+          "status": "In Negotiation",
+          "changedBy": "Shawon",
+          "at": "2026-09-12T09:22:18.783Z"
+        },
+        {
+          "status": "Confirmed Sales",
+          "changedBy": "Falguni",
+          "at": "2026-09-12T09:22:47.531Z"
+        }
+      ]
     }
   ],
   "admins": [
@@ -483,6 +506,14 @@
       "password": "superadmin123",
       "role": "superadmin",
       "createdAt": "2026-09-12T00:00:00.000Z"
+    },
+    {
+      "id": "admin-1789204279551",
+      "name": "Falguni Barua",
+      "email": "falgunisdesign@gmail.com",
+      "password": "admin123",
+      "role": "admin",
+      "createdAt": "2026-09-12T09:11:19.551Z"
     }
   ]
 }

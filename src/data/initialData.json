@@ -330,13 +330,18 @@
         }
       ],
       "totalAmount": 2690,
-      "specialNote": "Customer requested maroon colorway. Agreed on ৳2,500 over WhatsApp negotiation. Preparing packaging."
+      "statusUpdatedBy": "Falguni",
+      "statusUpdatedAt": "2026-09-10T14:20:00.000Z",
+      "specialNote": "Customer requested maroon colorway. Agreed on ৳2,500 over WhatsApp negotiation. Preparing packaging.",
+      "noteUpdatedBy": "Falguni"
     },
     {
       "id": "ORD-1002",
       "orderDate": "2026-09-09T18:15:00.000Z",
       "channel": "email",
       "status": "Confirmed Sales",
+      "statusUpdatedBy": "Shawon",
+      "statusUpdatedAt": "2026-09-11T16:45:00.000Z",
       "customer": {
         "name": "Tanvir Ahmed",
         "phone": "+8801711998877",
@@ -359,7 +364,8 @@
         }
       ],
       "totalAmount": 1640,
-      "specialNote": "Confirmed via WhatsApp call. Gift wrap requested with greeting card. Scheduled delivery via Pathao Courier."
+      "specialNote": "Confirmed via WhatsApp call. Gift wrap requested with greeting card. Scheduled delivery via Pathao Courier.",
+      "noteUpdatedBy": "Shawon"
     }
   ],
   "admins": [

@@ -4,7 +4,7 @@ import {
   DollarSign, TrendingUp, Clock, CheckCircle2, MessageSquare, 
   Edit3, Trash2, Plus, Save, Search, Filter, ExternalLink, Sparkles, RefreshCw, AlertCircle,
   Upload, Image as ImageIcon, Check, X, ArrowRight, ArrowDown, XCircle, ChevronRight, Phone, MapPin, Eye,
-  ShieldCheck, Lock, User, Users, ShieldAlert
+  ShieldCheck, Lock, User, Users, ShieldAlert, UserCheck, History
 } from 'lucide-react';
 
 export default function AdminPanel({
@@ -181,12 +181,16 @@ export default function AdminPanel({
   const handleSaveSpecialNote = async (orderId) => {
     const note = editingNotes[orderId] || '';
     setSaveStatus(prev => ({ ...prev, [orderId]: 'saving' }));
+    const adminName = currentUser?.name || currentUser?.email || 'Admin';
 
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ specialNote: note })
+        body: JSON.stringify({ 
+          specialNote: note,
+          noteUpdatedBy: adminName
+        })
       });
 
       if (res.ok) {
@@ -207,11 +211,16 @@ export default function AdminPanel({
   // Handle Order Status change
   const handleStatusChange = async (orderId, newStatus) => {
     setUpdatingOrderId(orderId);
+    const adminName = currentUser?.name || currentUser?.email || 'Admin';
+
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ 
+          status: newStatus,
+          updatedBy: adminName
+        })
       });
 
       if (res.ok) {
@@ -860,8 +869,8 @@ export default function AdminPanel({
                             </span>
                           </div>
 
-                          {/* Status Badge */}
-                          <div>
+                          {/* Status Badge & Admin Marker */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
                             <span style={{
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -887,6 +896,29 @@ export default function AdminPanel({
                                (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? 'Active Negotiation' :
                                order.status}
                             </span>
+
+                            {/* Marked By Admin Marker */}
+                            {order.statusUpdatedBy && (
+                              <span 
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.3rem',
+                                  padding: '0.22rem 0.6rem',
+                                  borderRadius: 'var(--radius-full)',
+                                  fontSize: '0.74rem',
+                                  fontWeight: 700,
+                                  background: '#eff6ff',
+                                  color: '#1d4ed8',
+                                  border: '1.5px solid #bfdbfe',
+                                  boxShadow: '0 1px 3px rgba(37, 99, 235, 0.1)'
+                                }}
+                                title={`Status updated by ${order.statusUpdatedBy}${order.statusUpdatedAt ? ' on ' + new Date(order.statusUpdatedAt).toLocaleString() : ''}`}
+                              >
+                                <UserCheck size={12} color="#2563eb" />
+                                <span>Marked by: <strong>{order.statusUpdatedBy}</strong></span>
+                              </span>
+                            )}
                           </div>
                         </div>
 
@@ -1089,6 +1121,53 @@ export default function AdminPanel({
                             {isUpdating && <RefreshCw size={13} className="spin" color="#e26d21" />}
                           </div>
                         </div>
+
+                        {/* Status Marker & History */}
+                        {order.statusUpdatedBy && (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '0.4rem',
+                            padding: '0.4rem 0.65rem',
+                            background: '#f8fafc',
+                            borderRadius: '6px',
+                            border: '1px solid #e2e8f0',
+                            fontSize: '0.76rem',
+                            marginTop: '0.2rem'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#334155' }}>
+                              <UserCheck size={13} color="#2563eb" />
+                              <span>Status updated by: <strong style={{ color: '#1d4ed8' }}>{order.statusUpdatedBy}</strong></span>
+                              {order.statusUpdatedAt && (
+                                <span style={{ color: '#64748b', fontSize: '0.72rem' }}>
+                                  ({new Date(order.statusUpdatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(order.statusUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                                </span>
+                              )}
+                            </div>
+
+                            {Array.isArray(order.statusHistory) && order.statusHistory.length > 1 && (
+                              <span 
+                                style={{ 
+                                  fontSize: '0.72rem', 
+                                  color: '#64748b',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  background: '#fff',
+                                  padding: '1px 6px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #cbd5e1'
+                                }}
+                                title={order.statusHistory.map(h => `${h.status} by ${h.changedBy || 'Admin'} (${new Date(h.at).toLocaleDateString()})`).join(' ➔ ')}
+                              >
+                                <History size={11} />
+                                {order.statusHistory.length} status logs
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1224,7 +1303,7 @@ export default function AdminPanel({
                         borderBottom: '1px solid #e7e2db',
                         paddingBottom: '0.8rem'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1c1917' }}>
                             #{order.id}
                           </span>
@@ -1234,32 +1313,66 @@ export default function AdminPanel({
                           <span style={{ fontSize: '0.8rem', color: '#78716c' }}>
                             {new Date(order.orderDate).toLocaleString()}
                           </span>
+
+                          {/* Admin Marker Badge */}
+                          {order.statusUpdatedBy && (
+                            <span 
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.22rem 0.65rem',
+                                borderRadius: 'var(--radius-full)',
+                                fontSize: '0.76rem',
+                                fontWeight: 700,
+                                background: '#eff6ff',
+                                color: '#1d4ed8',
+                                border: '1.5px solid #bfdbfe',
+                                boxShadow: '0 1px 3px rgba(37, 99, 235, 0.12)'
+                              }}
+                              title={`Status marked by ${order.statusUpdatedBy}${order.statusUpdatedAt ? ' on ' + new Date(order.statusUpdatedAt).toLocaleString() : ''}`}
+                            >
+                              <UserCheck size={13} color="#2563eb" />
+                              <span>Marked by: <strong style={{ textDecoration: 'underline' }}>{order.statusUpdatedBy}</strong></span>
+                            </span>
+                          )}
                         </div>
 
-                        {/* Status Switcher */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                          <span style={{ fontSize: '0.8rem', color: '#78716c', fontWeight: 600 }}>Order Status:</span>
-                          <select
-                            value={
-                              (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? 'Confirmed Sales' :
-                              (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? 'Active Negotiation' :
-                              order.status === 'Cancelled' ? 'Cancelled' : 'Active Negotiation'
-                            }
-                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                            style={{
-                              padding: '0.4rem 0.8rem',
-                              borderRadius: 'var(--radius-sm)',
-                              background: '#faf8f5',
-                              border: '1px solid #d6d0c7',
-                              color: '#c0520d',
-                              fontWeight: 700,
-                              fontSize: '0.85rem'
-                            }}
-                          >
-                            <option value="Active Negotiation">Active Negotiation</option>
-                            <option value="Confirmed Sales">Confirmed Sales</option>
-                            <option value="Cancelled">Cancelled</option>
-                          </select>
+                        {/* Status Switcher & Last Updated Info */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#78716c', fontWeight: 600 }}>Order Status:</span>
+                            <select
+                              value={
+                                (order.status === 'Confirmed' || order.status === 'Confirmed Sales') ? 'Confirmed Sales' :
+                                (order.status === 'In Negotiation' || order.status === 'Active Negotiation') ? 'Active Negotiation' :
+                                order.status === 'Cancelled' ? 'Cancelled' : 'Active Negotiation'
+                              }
+                              onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                              style={{
+                                padding: '0.4rem 0.8rem',
+                                borderRadius: 'var(--radius-sm)',
+                                background: '#faf8f5',
+                                border: '1px solid #d6d0c7',
+                                color: '#c0520d',
+                                fontWeight: 700,
+                                fontSize: '0.85rem'
+                              }}
+                            >
+                              <option value="Active Negotiation">Active Negotiation</option>
+                              <option value="Confirmed Sales">Confirmed Sales</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          </div>
+
+                          {order.statusUpdatedBy && (
+                            <div style={{ fontSize: '0.73rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <span>Status updated by: <strong style={{ color: '#1d4ed8' }}>{order.statusUpdatedBy}</strong></span>
+                              {order.statusUpdatedAt && (
+                                <span>• {new Date(order.statusUpdatedAt).toLocaleDateString()} at {new Date(order.statusUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -1368,8 +1481,13 @@ export default function AdminPanel({
                         padding: '1rem'
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#9a3412', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#9a3412', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                             <Edit3 size={14} /> Admin Special Note for this Order:
+                            {order.noteUpdatedBy && (
+                              <span style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 500 }}>
+                                (Annotated by: <strong style={{ color: '#1d4ed8' }}>{order.noteUpdatedBy}</strong>)
+                              </span>
+                            )}
                           </label>
                           {saveStatus[order.id] === 'saving' && (
                             <span style={{ fontSize: '0.78rem', color: '#2563eb' }}>Saving...</span>
