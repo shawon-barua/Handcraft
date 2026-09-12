@@ -8,7 +8,7 @@ import ProductDetailModal from './components/ProductDetailModal';
 import AdminPanel from './components/AdminPanel';
 import { 
   Sparkles, MessageSquare, ShoppingBag, Heart, ShieldCheck, 
-  RotateCcw, SlidersHorizontal, Phone, Mail, ArrowUp
+  RotateCcw, SlidersHorizontal, Phone, Mail, ArrowUp, X
 } from 'lucide-react';
 
 export default function App() {
@@ -164,12 +164,16 @@ export default function App() {
 
   // Filter and sort products
   const filteredProducts = products.filter(p => {
-    const matchesCat = activeCategory === 'all' || p.category === activeCategory;
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery || 
-      p.title.toLowerCase().includes(q) ||
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch = !q || 
+      (p.title && p.title.toLowerCase().includes(q)) ||
       (p.materials && p.materials.toLowerCase().includes(q)) ||
-      (p.description && p.description.toLowerCase().includes(q));
+      (p.description && p.description.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().replace(/-/g, ' ').includes(q)) ||
+      (p.badges && p.badges.some(b => b.toLowerCase().includes(q)));
+
+    // When actively searching, search across all categories (or within activeCategory if explicitly selected and matches exist)
+    const matchesCat = (!q || activeCategory === 'all' || p.category === activeCategory);
     return matchesCat && matchesSearch;
   });
 
@@ -201,6 +205,10 @@ export default function App() {
         setSearchQuery={setSearchQuery}
         isAdminMode={isAdminMode}
         setIsAdminMode={setIsAdminMode}
+        products={products}
+        onSelectProduct={setSelectedProductForDetail}
+        onSearchSubmit={scrollToProducts}
+        currency={currency}
       />
 
       {/* Main Content: Storefront or Admin Panel */}
@@ -253,11 +261,32 @@ export default function App() {
                     <span style={{ fontSize: '0.85rem', color: '#93c5fd' }}>
                       Showing {filteredProducts.length} artisan creation(s)
                     </span>
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.2)',
+                          color: '#fca5a5',
+                          border: '1px solid rgba(239, 68, 68, 0.4)',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: '0.72rem',
+                          padding: '0.15rem 0.6rem',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}
+                      >
+                        <X size={12} /> Clear search: "{searchQuery}"
+                      </button>
+                    )}
                   </div>
                   <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2rem)', color: '#ffffff', marginTop: '0.35rem', fontWeight: 700, letterSpacing: '-0.01em' }}>
-                    {activeCategory === 'all'
-                      ? 'Featured Handcrafted Collection'
-                      : categories.find(c => c.slug === activeCategory || c.id === activeCategory)?.name || 'Collection'}
+                    {searchQuery
+                      ? `Search Results for "${searchQuery}"`
+                      : (activeCategory === 'all'
+                          ? 'Featured Handcrafted Collection'
+                          : categories.find(c => c.slug === activeCategory || c.id === activeCategory)?.name || 'Collection')}
                   </h2>
                 </div>
 
@@ -298,10 +327,12 @@ export default function App() {
                 }}>
                   <ShoppingBag size={48} style={{ margin: '0 auto 1rem', opacity: 0.4 }} />
                   <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-                    No handcrafted items found
+                    {searchQuery ? `No handcrafted items match "${searchQuery}"` : 'No handcrafted items found'}
                   </h3>
-                  <p style={{ maxWidth: '400px', margin: '0 auto 1.5rem', fontSize: '0.9rem' }}>
-                    Try clearing your search query or selecting another artisan category.
+                  <p style={{ maxWidth: '440px', margin: '0 auto 1.5rem', fontSize: '0.9rem' }}>
+                    {searchQuery 
+                      ? 'Try searching for popular artisan tags like "haldi", "terracotta", "clay", "earrings", or "bracelet".'
+                      : 'Try clearing your search query or selecting another artisan category.'}
                   </p>
                   <button
                     onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}
@@ -419,25 +450,27 @@ export default function App() {
           }}>
             {/* Brand */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
                 <div style={{
-                  width: '36px',
-                  height: '36px',
+                  width: '48px',
+                  height: '48px',
                   borderRadius: '50%',
                   overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                  border: '1.5px solid #fed7aa',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.4), 0 0 0 2px #e26d21',
                   flexShrink: 0,
-                  background: '#fff'
+                  background: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
                   <img
                     src={settings?.logo || "/logo.png"}
                     alt={settings?.storeName || "Falguni Handcraft"}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.32)', display: 'block' }}
                   />
                 </div>
-                <h3 style={{ fontSize: '1.4rem', color: '#ffffff', margin: 0 }}>
-                  {settings?.storeName || 'Falguni Handcraft'}
+                <h3 style={{ fontSize: '1.45rem', color: '#ffffff', fontWeight: 700, margin: 0 }}>
+                  <span style={{ color: '#e26d21' }}>Falguni</span> Handcraft
                 </h3>
               </div>
               <p style={{ fontSize: '0.85rem', color: '#a8a29e', lineHeight: 1.6, marginBottom: '1rem' }}>
@@ -562,8 +595,8 @@ export default function App() {
           <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: '540px', padding: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Heart size={20} color="#ef4444" fill="#ef4444" />
-                <h3 style={{ fontSize: '1.3rem', color: '#fef3c7' }}>Your Wishlist ({wishlist.length})</h3>
+                <Heart size={20} color="#e26d21" fill="#e26d21" />
+                <h3 style={{ fontSize: '1.3rem', color: '#1c1917', fontWeight: 700 }}>Your Wishlist ({wishlist.length})</h3>
               </div>
               <button
                 onClick={() => setShowWishlistModal(false)}
@@ -579,7 +612,7 @@ export default function App() {
                 Your saved wishlist is empty. Tap the heart on any product to save it here.
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '350px', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '380px', overflowY: 'auto' }}>
                 {wishlist.map(item => (
                   <div
                     key={item.id}
@@ -587,30 +620,46 @@ export default function App() {
                       display: 'flex',
                       gap: '0.8rem',
                       alignItems: 'center',
-                      background: 'rgba(0,0,0,0.3)',
+                      background: '#faf8f5',
+                      border: '1px solid #e7e2db',
                       padding: '0.75rem',
                       borderRadius: 'var(--radius-sm)'
                     }}
                   >
-                    <img src={item.image} alt={item.title} style={{ width: '50px', height: '50px', borderRadius: '4px', objectFit: 'cover' }} />
+                    <img src={item.image} alt={item.title} style={{ width: '52px', height: '52px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #e7e2db' }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: '0.9rem', color: '#1c1917', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.title}
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: '#fcd34d', fontWeight: 600 }}>
+                      <div style={{ fontSize: '0.85rem', color: '#c0520d', fontWeight: 700 }}>
                         {currency} {item.price?.toLocaleString()}
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        handleAddToCart(item, 1);
-                        setShowWishlistModal(false);
-                        setIsCartOpen(true);
-                      }}
-                      className="btn btn-primary btn-sm"
-                    >
-                      Move to Cart
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <button
+                        onClick={() => {
+                          handleAddToCart(item, 1);
+                          setShowWishlistModal(false);
+                          setIsCartOpen(true);
+                        }}
+                        className="btn btn-primary btn-sm"
+                      >
+                        Move to Cart
+                      </button>
+                      <button
+                        onClick={() => handleToggleWishlist(item)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#a8a29e',
+                          cursor: 'pointer',
+                          padding: '0.4rem'
+                        }}
+                        title="Remove from wishlist"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

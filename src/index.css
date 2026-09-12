@@ -126,6 +126,74 @@ a {
   width: 100%;
 }
 
+/* ==========================================================================
+   Navbar Layout (Desktop Default & Mobile Responsive)
+   ========================================================================== */
+.navbar-wrapper {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.85rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  flex: 0 0 auto;
+  order: 1;
+}
+
+.navbar-brand-title {
+  font-size: 1.65rem;
+  line-height: 1.1;
+  color: #1c1917;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.navbar-brand-subtitle {
+  font-size: 0.72rem;
+  color: #78716c;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 500;
+  display: block;
+  margin-top: 2px;
+}
+
+.navbar-search-wrapper {
+  flex: 1 1 320px;
+  max-width: 460px;
+  position: relative;
+  order: 2;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+  order: 3;
+}
+
+.navbar-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -398,31 +466,34 @@ a {
     display: none !important;
   }
 
-  /* Main Navbar on mobile */
+  /* Main Navbar on mobile: Top row (brand + actions) and Bottom row (search) */
   .navbar-wrapper {
     padding: 0.65rem 0 !important;
   }
   .navbar-container {
-    display: flex;
-    flex-direction: column;
+    flex-wrap: wrap !important;
     gap: 0.75rem !important;
   }
-  .navbar-top-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
+  .navbar-brand {
+    order: 1 !important;
+  }
+  .navbar-actions {
+    order: 2 !important;
+    gap: 0.45rem !important;
+    margin-left: auto !important;
+  }
+  .navbar-search-wrapper {
+    order: 3 !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0.15rem;
   }
   .navbar-brand-title {
     font-size: 1.35rem !important;
   }
   .navbar-brand-subtitle {
     font-size: 0.65rem !important;
-  }
-  .navbar-search-wrapper {
-    width: 100% !important;
-    max-width: 100% !important;
-    flex: none !important;
   }
 
   /* Hero Section */
@@ -528,6 +599,13 @@ a {
 @media (max-width: 479px) {
   .container {
     padding: 0 0.75rem;
+  }
+  
+  .navbar-btn-text {
+    display: none;
+  }
+  .navbar-action-btn {
+    padding: 0.45rem 0.65rem !important;
   }
   
   .products-grid-container {

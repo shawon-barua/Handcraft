@@ -41,9 +41,9 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
   }
 
   const imageLabels = [
-    { label: 'Front Overview', sub: 'Primary Angle' },
-    { label: 'Macro Details', sub: 'Close-Up View' },
-    { label: 'Matching Earrings', sub: 'Craft & Profile' }
+    { label: 'Front View' },
+    { label: 'Close Up View' },
+    { label: 'Matching Product' }
   ];
 
   const currentImage = images[activeImageIndex] || images[0];
@@ -72,7 +72,7 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
       `*Price:* ৳${product.price.toLocaleString()} BDT\n` +
       `*Quantity:* ${quantity}\n` +
       `*Estimated Total:* ৳${(product.price * quantity).toLocaleString()} BDT\n\n` +
-      `Please let me know how we can proceed with colors and delivery!`
+      `Please let me know how we can proceed !`
     );
     return `https://wa.me/${whatsappNumber}?text=${text}`;
   };
@@ -323,12 +323,9 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
             </div>
 
             {/* 3 Dedicated Picture Thumbnails */}
-            <div style={{ marginTop: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.75rem' }}>
-                <strong style={{ color: '#78716c', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  3 High-Definition Angles
-                </strong>
-                <span style={{ color: '#e26d21', fontWeight: 600 }}>Click to switch angle</span>
+            <div style={{ marginTop: '0.85rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.45rem', fontSize: '0.75rem' }}>
+                <span style={{ color: '#e26d21', fontWeight: 600 }}>Click to switch Picture</span>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
@@ -361,9 +358,11 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
                         <div style={{ fontSize: '0.72rem', fontWeight: 700, color: isActive ? '#e26d21' : '#1c1917' }}>
                           {imageLabels[idx]?.label || `Photo ${idx + 1}`}
                         </div>
-                        <div style={{ fontSize: '0.65rem', color: '#78716c' }}>
-                          {imageLabels[idx]?.sub || 'Angle'}
-                        </div>
+                        {imageLabels[idx]?.sub && (
+                          <div style={{ fontSize: '0.65rem', color: '#78716c' }}>
+                            {imageLabels[idx].sub}
+                          </div>
+                        )}
                       </div>
                     </button>
                   );
