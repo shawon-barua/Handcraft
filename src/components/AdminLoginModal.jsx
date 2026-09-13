@@ -47,11 +47,6 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }) {
     }
   };
 
-  const handleFillSuperAdminDemo = () => {
-    setEmail('shawon.cse.ku@gmail.com');
-    setPassword('superadmin123');
-    setError('');
-  };
 
   return (
     <div 
@@ -190,7 +185,7 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }) {
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. shawon.cse.ku@gmail.com"
+                placeholder="Enter your email or username"
                 required
                 style={{
                   width: '100%',
@@ -309,40 +304,7 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }) {
             )}
           </button>
 
-          {/* Super Admin Quick Helper Pill */}
-          <div style={{
-            marginTop: '1.4rem',
-            padding: '0.85rem',
-            background: '#faf8f5',
-            borderRadius: '10px',
-            border: '1px dashed #e7e2db',
-            fontSize: '0.78rem',
-            color: '#78716c'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-              <span style={{ fontWeight: 600, color: '#1c1917', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                <Sparkles size={13} color="#e26d21" /> Default Super Admin:
-              </span>
-              <button
-                type="button"
-                onClick={handleFillSuperAdminDemo}
-                style={{
-                  background: '#fff',
-                  border: '1px solid #d6d0c7',
-                  borderRadius: '4px',
-                  padding: '2px 8px',
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                  color: '#e26d21',
-                  cursor: 'pointer'
-                }}
-              >
-                Auto-fill
-              </button>
-            </div>
-            <div>Email: <code style={{ color: '#1c1917', background: '#f5f5f4', padding: '1px 4px', borderRadius: '3px' }}>shawon.cse.ku@gmail.com</code></div>
-            <div>Password: <code style={{ color: '#1c1917', background: '#f5f5f4', padding: '1px 4px', borderRadius: '3px' }}>superadmin123</code></div>
-          </div>
+
         </form>
       </div>
     </div>

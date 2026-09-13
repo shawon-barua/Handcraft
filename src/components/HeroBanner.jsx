@@ -26,9 +26,9 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.8rem', flexWrap: 'wrap' }}>
               <span className="badge badge-gold" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Sparkles size={12} color="#c0520d" /> Handcrafted Heritage Collective
+                <Sparkles size={12} color="#c0520d" /> Handcrafted in Bangladesh
               </span>
-              <span className="badge" style={{ background: '#1c1917', color: '#ffffff' }}>Artisan Made</span>
+              <span className="badge" style={{ background: '#1c1917', color: '#ffffff' }}>Artisan Made BD</span>
             </div>
 
             <h1 className="hero-title" style={{
@@ -48,7 +48,7 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
               maxWidth: '520px',
               marginBottom: '1.75rem'
             }}>
-              Exquisitely handcrafted seed bead necklaces, vibrant thread chokers, and terracotta bridal Haldi sets. Browse, customize your sizing, and connect directly with our artisans.
+              Exquisitely handcrafted seed bead necklaces, vibrant thread chokers, clay jewelry, and bridal Haldi wedding sets in Bangladesh. Custom sizing, cash on delivery, and nationwide delivery across Dhaka & all 64 districts.
             </p>
 
             {/* CTAs */}
@@ -204,7 +204,7 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.4rem' }}>
             <div>
               <h2 className="category-showcase-title" style={{ fontSize: '1.55rem', color: '#1c1917' }}>
-                Explore Curated Handcrafted Categories
+                Explore Handcrafted Jewelry Collections in Bangladesh
               </h2>
             </div>
             <span style={{ fontSize: '0.82rem', color: '#78716c' }}>Tap any category to filter</span>
@@ -250,7 +250,7 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
                 >
                   <img
                     src={cat.image}
-                    alt={cat.name}
+                    alt={`${cat.name} - Handcrafted Jewelry Bangladesh`}
                     loading="lazy"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />

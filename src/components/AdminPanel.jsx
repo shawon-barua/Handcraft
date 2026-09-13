@@ -51,7 +51,7 @@ export default function AdminPanel({
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [newProduct, setNewProduct] = useState({
     title: '',
-    category: 'clay-and-thread-jwelery',
+    category: 'seed-beads-jewellery',
     price: '',
     originalPrice: '',
     description: '',
@@ -254,6 +254,46 @@ export default function AdminPanel({
     }
   };
 
+  // Handle Delete Single Order
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm(`Are you sure you want to permanently delete order #${orderId}?`)) return;
+    try {
+      const res = await authFetch(`/api/orders/${orderId}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        const [updatedOrders, updatedStats] = await Promise.all([
+          authFetch('/api/orders').then(r => r.json()),
+          authFetch('/api/stats').then(r => r.json())
+        ]);
+        setOrders(Array.isArray(updatedOrders) ? updatedOrders : []);
+        setStats(updatedStats);
+      }
+    } catch (err) {
+      console.error('Failed to delete order:', err);
+    }
+  };
+
+  // Handle Clear All Orders
+  const handleClearAllOrders = async () => {
+    if (!window.confirm('⚠️ Are you sure you want to permanently DELETE ALL ORDERS from the database? This cannot be undone.')) return;
+    try {
+      const res = await authFetch('/api/orders', {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        const [updatedOrders, updatedStats] = await Promise.all([
+          authFetch('/api/orders').then(r => r.json()),
+          authFetch('/api/stats').then(r => r.json())
+        ]);
+        setOrders(Array.isArray(updatedOrders) ? updatedOrders : []);
+        setStats(updatedStats);
+      }
+    } catch (err) {
+      console.error('Failed to clear orders:', err);
+    }
+  };
+
   // Handle Creating Category
   const handleCreateCategory = async (e) => {
     e.preventDefault();
@@ -317,7 +357,7 @@ export default function AdminPanel({
         setShowAddProductModal(false);
         setNewProduct({
           title: '',
-          category: categories[0]?.slug || 'clay-and-thread-jwelery',
+          category: categories[0]?.slug || 'seed-beads-jewellery',
           price: '',
           originalPrice: '',
           description: '',
@@ -361,7 +401,7 @@ export default function AdminPanel({
     setEditingProduct({
       id: prod.id,
       title: prod.title || '',
-      category: prod.category || 'clay-and-thread-jwelery',
+      category: prod.category || 'seed-beads-jewellery',
       price: prod.price || '',
       originalPrice: prod.originalPrice || '',
       description: prod.description || '',
@@ -828,6 +868,27 @@ export default function AdminPanel({
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  {orders.length > 0 && (
+                    <button
+                      onClick={handleClearAllOrders}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        fontSize: '0.8rem',
+                        padding: '0.42rem 0.8rem',
+                        background: '#fee2e2',
+                        color: '#b91c1c',
+                        border: '1px solid #fca5a5',
+                        borderRadius: 'var(--radius-sm)',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                      title="Clear all orders before hosting"
+                    >
+                      <Trash2 size={13} /> Clear Orders
+                    </button>
+                  )}
                   <button
                     onClick={() => setActiveTab('orders')}
                     className="btn btn-secondary btn-sm"
@@ -994,10 +1055,25 @@ export default function AdminPanel({
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '70px', overflowY: 'auto' }}>
                               {order.items?.map((item, i) => (
-                                <div key={i} style={{ fontSize: '0.82rem', display: 'flex', justifyContent: 'space-between', color: '#44403c' }}>
-                                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
-                                    {item.title} × {item.quantity || 1}
-                                  </span>
+                                <div key={i} style={{ fontSize: '0.82rem', display: 'flex', justifyContent: 'space-between', color: '#44403c', alignItems: 'center' }}>
+                                  <a 
+                                    href={`/?product=${encodeURIComponent(item.id)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ 
+                                      overflow: 'hidden', 
+                                      textOverflow: 'ellipsis', 
+                                      whiteSpace: 'nowrap', 
+                                      maxWidth: '70%',
+                                      color: '#c0520d',
+                                      textDecoration: 'underline',
+                                      fontWeight: 600,
+                                      cursor: 'pointer'
+                                    }}
+                                    title="Click to view product on storefront in new tab"
+                                  >
+                                    🔗 {item.title} × {item.quantity || 1}
+                                  </a>
                                   <span style={{ fontWeight: 600 }}>
                                     {currency} {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                                   </span>
@@ -1133,6 +1209,25 @@ export default function AdminPanel({
                               <option value="Confirmed Sales">Confirmed Sales</option>
                               <option value="Cancelled">Cancelled</option>
                             </select>
+                            <button
+                              onClick={() => handleDeleteOrder(order.id)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                padding: '0.3rem 0.55rem',
+                                borderRadius: 'var(--radius-sm)',
+                                background: '#fee2e2',
+                                color: '#b91c1c',
+                                border: '1px solid #fca5a5',
+                                fontSize: '0.74rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                              title="Delete this order"
+                            >
+                              <Trash2 size={12} /> Delete
+                            </button>
                             {isUpdating && <RefreshCw size={13} className="spin" color="#e26d21" />}
                           </div>
                         </div>
@@ -1267,17 +1362,40 @@ export default function AdminPanel({
                 })}
               </div>
 
-              {/* Order Search */}
-              <div style={{ position: 'relative', width: '260px' }}>
-                <Search size={15} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input
-                  type="text"
-                  placeholder="Search customer, phone, ID..."
-                  value={orderSearch}
-                  onChange={e => setOrderSearch(e.target.value)}
-                  className="form-input"
-                  style={{ padding: '0.45rem 0.8rem 0.45rem 2.2rem', fontSize: '0.85rem' }}
-                />
+              {/* Order Search & Actions */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                {orders.length > 0 && (
+                  <button
+                    onClick={handleClearAllOrders}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.45rem 0.85rem',
+                      borderRadius: 'var(--radius-sm)',
+                      background: '#fee2e2',
+                      color: '#b91c1c',
+                      border: '1px solid #fca5a5',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                    title="Permanently wipe all orders before hosting"
+                  >
+                    <Trash2 size={13} /> Clear All Orders
+                  </button>
+                )}
+                <div style={{ position: 'relative', width: '240px' }}>
+                  <Search size={15} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search customer, phone, ID..."
+                    value={orderSearch}
+                    onChange={e => setOrderSearch(e.target.value)}
+                    className="form-input"
+                    style={{ padding: '0.45rem 0.8rem 0.45rem 2.2rem', fontSize: '0.85rem' }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -1378,6 +1496,25 @@ export default function AdminPanel({
                               <option value="Confirmed Sales">Confirmed Sales</option>
                               <option value="Cancelled">Cancelled</option>
                             </select>
+                            <button
+                              onClick={() => handleDeleteOrder(order.id)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.3rem',
+                                padding: '0.4rem 0.65rem',
+                                borderRadius: 'var(--radius-sm)',
+                                background: '#fee2e2',
+                                color: '#b91c1c',
+                                border: '1px solid #fca5a5',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                fontWeight: 600
+                              }}
+                              title="Delete this order"
+                            >
+                              <Trash2 size={13} /> Delete
+                            </button>
                           </div>
 
                           {order.statusUpdatedBy && (
@@ -1462,9 +1599,20 @@ export default function AdminPanel({
                                   color: '#292524'
                                 }}
                               >
-                                <span>
-                                  <strong>{item.title}</strong> × {item.quantity}
-                                </span>
+                                <a
+                                  href={`/?product=${encodeURIComponent(item.id)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    color: '#c0520d',
+                                    textDecoration: 'underline',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Click to view product on storefront in new tab"
+                                >
+                                  🔗 <strong>{item.title}</strong> × {item.quantity}
+                                </a>
                                 <span style={{ color: '#c0520d', fontWeight: 700 }}>
                                   {currency} {(item.price * item.quantity).toLocaleString()}
                                 </span>

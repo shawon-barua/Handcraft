@@ -14,7 +14,7 @@ const AdminPanel = React.lazy(() => import('./components/AdminPanel'));
 import AdminLoginModal from './components/AdminLoginModal';
 import { 
   Sparkles, MessageSquare, ShoppingBag, Heart, ShieldCheck, 
-  RotateCcw, SlidersHorizontal, Phone, Mail, ArrowUp, X
+  RotateCcw, SlidersHorizontal, Phone, Mail, ArrowUp, X, Truck, MapPin
 } from 'lucide-react';
 
 import fallbackData from './data/initialData.json';
@@ -115,6 +115,77 @@ export default function App() {
     loadData();
   }, []);
 
+  // Handle URL deep linking (e.g. ?product=p-111 or ?id=p-111)
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('product') || urlParams.get('id');
+      if (productId) {
+        const found = products.find(
+          p => String(p.id).toLowerCase() === String(productId).toLowerCase() || 
+               p.slug === productId
+        );
+        if (found) {
+          setSelectedProductForDetail(found);
+          setIsAdminMode(false);
+          if (found.category) {
+            setActiveCategory(found.category);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing product URL parameter:', e);
+    }
+  }, [products]);
+
+  // Handle browser back/forward buttons (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('product') || urlParams.get('id');
+        if (productId && products.length > 0) {
+          const found = products.find(
+            p => String(p.id).toLowerCase() === String(productId).toLowerCase() || 
+                 p.slug === productId
+          );
+          if (found) {
+            setSelectedProductForDetail(found);
+            setIsAdminMode(false);
+          } else {
+            setSelectedProductForDetail(null);
+          }
+        } else {
+          setSelectedProductForDetail(null);
+        }
+      } catch (e) {}
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [products]);
+
+  const handleOpenProductDetail = (product) => {
+    if (!product) return;
+    setSelectedProductForDetail(product);
+    try {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('product', product.id);
+      window.history.pushState({ productId: product.id }, '', newUrl.toString());
+    } catch (e) {}
+  };
+
+  const handleCloseProductDetail = () => {
+    setSelectedProductForDetail(null);
+    try {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('product');
+      newUrl.searchParams.delete('id');
+      window.history.pushState({}, '', newUrl.toString());
+    } catch (e) {}
+  };
+
   // Authentication Handlers
   const handleLoginSuccess = (user, token) => {
     setCurrentUser(user);
@@ -208,25 +279,48 @@ export default function App() {
     }
   };
 
-  // Filter and sort products
-  const filteredProducts = products.filter(p => {
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch = !q || 
-      (p.title && p.title.toLowerCase().includes(q)) ||
-      (p.materials && p.materials.toLowerCase().includes(q)) ||
-      (p.description && p.description.toLowerCase().includes(q)) ||
-      (p.category && p.category.toLowerCase().replace(/-/g, ' ').includes(q)) ||
-      (p.badges && p.badges.some(b => b.toLowerCase().includes(q)));
+  // Filter and sort products with smart relevance scoring
+  const q = searchQuery.toLowerCase().trim();
 
-    // When actively searching, search across all categories (or within activeCategory if explicitly selected and matches exist)
+  const getRelevance = (p, term) => {
+    const title = (p.title || '').toLowerCase();
+    const cat = (p.category || '').toLowerCase().replace(/-/g, ' ');
+    const words = title.split(/\s+/);
+    const catWords = cat.split(/\s+/);
+    let score = 0;
+
+    if (title.startsWith(term)) score += 150;
+    else if (words.some(w => w.startsWith(term))) score += 100;
+    else if (cat.startsWith(term) || catWords.some(w => w.startsWith(term))) score += 80;
+    else if (title.includes(term)) score += 50;
+    else if (cat.includes(term)) score += 35;
+
+    if (term.length <= 2) {
+      const matWords = (p.materials || '').toLowerCase().split(/[\s,]+/);
+      if (matWords.some(w => w.startsWith(term))) score += 15;
+    } else {
+      if ((p.materials || '').toLowerCase().includes(term)) score += 15;
+      if ((p.description || '').toLowerCase().includes(term)) score += 10;
+    }
+    return score;
+  };
+
+  const filteredProducts = products.filter(p => {
+    if (!q) {
+      return activeCategory === 'all' || p.category === activeCategory;
+    }
+    const score = getRelevance(p, q);
     const matchesCat = (!q || activeCategory === 'all' || p.category === activeCategory);
-    return matchesCat && matchesSearch;
+    return matchesCat && score > 0;
   });
 
   if (priceSort === 'low-high') {
     filteredProducts.sort((a, b) => a.price - b.price);
   } else if (priceSort === 'high-low') {
     filteredProducts.sort((a, b) => b.price - a.price);
+  } else if (q) {
+    // Relevance sort by default when actively searching
+    filteredProducts.sort((a, b) => getRelevance(b, q) - getRelevance(a, q));
   }
 
   const currency = settings?.currency || '৳';
@@ -292,7 +386,7 @@ export default function App() {
             }}
             onScrollToProducts={scrollToProducts}
             featuredProduct={products.find(p => p.id === settings?.featuredProductId) || products.find(p => p.id === 'p-101') || products[0]}
-            onSelectProduct={setSelectedProductForDetail}
+            onSelectProduct={handleOpenProductDetail}
             settings={settings}
           />
 
@@ -413,7 +507,7 @@ export default function App() {
                       currency={currency}
                       onAddToCart={handleAddToCart}
                       onOrderNow={handleOrderNow}
-                      onOpenDetail={(prod) => setSelectedProductForDetail(prod)}
+                      onOpenDetail={handleOpenProductDetail}
                       isWishlisted={wishlist.some(p => p.id === product.id)}
                       onToggleWishlist={handleToggleWishlist}
                     />
@@ -479,6 +573,28 @@ export default function App() {
                   </p>
                 </div>
               </div>
+
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '10px',
+                  background: '#f0f9ff',
+                  border: '1px solid #bae6fd',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Truck size={22} color="#0284c7" />
+                </div>
+                <div>
+                  <h4 style={{ color: '#1c1917', fontSize: '1.05rem', marginBottom: '0.25rem' }}>All Bangladesh Delivery</h4>
+                  <p style={{ fontSize: '0.82rem', color: '#78716c' }}>
+                    Cash on Delivery & bKash across Dhaka, Chattogram, Sylhet, and all 64 districts with careful protective packaging.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
         </main>
@@ -486,7 +602,13 @@ export default function App() {
 
       {/* Floating WhatsApp Button (Bottom Right) */}
       <a
-        href={`https://wa.me/${cleanWaNumber(settings?.whatsappNumber)}?text=${encodeURIComponent("Hello Falguni Handcraft! I'm browsing your handcrafted jewelry store and would like to ask a question.")}`}
+        href={`https://wa.me/${cleanWaNumber(settings?.whatsappNumber)}?text=${encodeURIComponent(
+          cart.length > 0
+            ? `Hello ${settings?.storeName || 'Falguni Handcraft'}! I have ${cart.length} handcrafted item(s) in my cart and would like to talk with you:\n\n` +
+              cart.map((item, idx) => `${idx + 1}. *${item.title}* (x${item.quantity}) - Tk ${(item.price * item.quantity).toLocaleString()}\n   Link: ${(typeof window !== 'undefined' ? window.location.origin : 'https://falgunishandcraft.com')}/?product=${encodeURIComponent(item.id)}`).join('\n\n') +
+              `\n\n*Subtotal:* Tk ${cart.reduce((sum, i) => sum + (i.price * i.quantity), 0).toLocaleString()}\n\nPlease let me know the details!`
+            : `Hello ${settings?.storeName || 'Falguni Handcraft'}! I'm browsing your handcrafted jewelry store and would like to talk with you.`
+        )}`}
         target="_blank"
         rel="noopener noreferrer"
         className="floating-whatsapp"
@@ -528,7 +650,7 @@ export default function App() {
                 }}>
                   <img
                     src={settings?.logo || "/logo.png"}
-                    alt={settings?.storeName || "Falguni Handcraft"}
+                    alt={settings?.storeName || "Falguni Handcraft - Handcrafted Jewelry Bangladesh"}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.32)', display: 'block' }}
                   />
                 </div>
@@ -536,11 +658,14 @@ export default function App() {
                   <span style={{ color: '#e26d21' }}>Falguni</span> Handcraft
                 </h3>
               </div>
-              <p style={{ fontSize: '0.85rem', color: '#a8a29e', lineHeight: 1.6, marginBottom: '1rem' }}>
-                Exquisitely handcrafted aesthetic seed bead, thread, and clay designs. Custom Haldi sets, stylish bracelets, and anklets made to match your special occasions.
+              <p style={{ fontSize: '0.85rem', color: '#a8a29e', lineHeight: 1.6, marginBottom: '0.8rem' }}>
+                Exquisitely handcrafted aesthetic seed bead, thread, and clay jewelry in Bangladesh. Custom Gaye Holud sets, bridal accessories, and stylish bracelets crafted for your special moments.
               </p>
-              <div style={{ fontSize: '0.85rem', color: '#fed7aa', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <div style={{ fontSize: '0.85rem', color: '#fed7aa', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
                 <Phone size={14} color="#25d366" /> WhatsApp: +{cleanWaNumber(settings?.whatsappNumber)}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#d6d3d1', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <MapPin size={14} color="#e26d21" /> Chittagong , Bangladesh. Delivery all 64 districts
               </div>
             </div>
 
@@ -601,7 +726,26 @@ export default function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               <span>© {new Date().getFullYear()} {settings?.storeName || 'Falguni Handcraft'}. All rights reserved.</span>
               <span style={{ opacity: 0.4 }}>|</span>
-              <span>Architected & Developed by <strong style={{ color: '#fed7aa', fontWeight: 600, letterSpacing: '0.02em' }}>Shawon Barua</strong> (<a href="mailto:shawon.cse.ku@gmail.com" style={{ color: '#fb923c', textDecoration: 'none' }}>shawon.cse.ku@gmail.com</a>)</span>
+              <span>
+                Developed by{' '}
+                <a
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=shawon.cse.ku@gmail.com&su=Project%20Inquiry%20-%20NextGen%20Work"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#fb923c',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    transition: 'color 0.2s ease',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#fed7aa')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#fb923c')}
+                  title="Send email to shawon.cse.ku@gmail.com"
+                >
+                  NextGen Work
+                </a>
+              </span>
             </div>
             <div>Exquisite Handcrafted Jewellery with Customized Colors & Designs</div>
           </div>
@@ -617,6 +761,10 @@ export default function App() {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveFromCart}
         onClearCart={handleClearCart}
+        onOpenDetail={(item) => {
+          setIsCartOpen(false);
+          handleOpenProductDetail(item);
+        }}
         onProceedCheckout={() => {
           setIsCartOpen(false);
           setIsCheckoutOpen(true);
@@ -631,6 +779,10 @@ export default function App() {
         cart={cart}
         currency={currency}
         settings={settings}
+        onOpenDetail={(item) => {
+          setIsCheckoutOpen(false);
+          handleOpenProductDetail(item);
+        }}
         onOrderSuccess={(order) => {
           handleClearCart();
           loadData();
@@ -643,10 +795,10 @@ export default function App() {
           product={selectedProductForDetail}
           settings={settings}
           isOpen={!!selectedProductForDetail}
-          onClose={() => setSelectedProductForDetail(null)}
+          onClose={handleCloseProductDetail}
           onAddToCart={(prod, qty) => {
             handleAddToCart(prod, qty);
-            setSelectedProductForDetail(null);
+            handleCloseProductDetail();
             setIsCartOpen(true);
           }}
         />

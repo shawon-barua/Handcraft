@@ -71,7 +71,7 @@ export default function ProductCard({
       >
         <img
           src={displayImage}
-          alt={product.title}
+          alt={`${product.title} - Handcrafted Jewelry Bangladesh`}
           loading="lazy"
           decoding="async"
           style={{

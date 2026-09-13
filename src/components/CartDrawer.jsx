@@ -14,6 +14,7 @@ export default function CartDrawer({
   onRemoveItem,
   onClearCart,
   onProceedCheckout,
+  onOpenDetail,
   currency = '৳'
 }) {
   if (!isOpen) return null;
@@ -129,19 +130,30 @@ export default function CartDrawer({
                       width: '65px',
                       height: '65px',
                       borderRadius: 'var(--radius-sm)',
-                      objectFit: 'cover'
+                      objectFit: 'cover',
+                      cursor: onOpenDetail ? 'pointer' : 'default'
                     }}
+                    onClick={() => onOpenDetail && onOpenDetail(item)}
+                    title="Click to view product details"
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <h4 style={{
-                      fontSize: '0.9rem',
-                      color: '#1c1917',
-                      fontWeight: 600,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      marginBottom: '0.2rem'
-                    }}>
+                    <h4 
+                      onClick={() => onOpenDetail && onOpenDetail(item)}
+                      style={{
+                        fontSize: '0.9rem',
+                        color: '#1c1917',
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        marginBottom: '0.2rem',
+                        cursor: onOpenDetail ? 'pointer' : 'default',
+                        transition: 'color 0.2s ease'
+                      }}
+                      onMouseEnter={e => { if (onOpenDetail) e.currentTarget.style.color = '#e26d21'; }}
+                      onMouseLeave={e => { if (onOpenDetail) e.currentTarget.style.color = '#1c1917'; }}
+                      title="Click to view product details"
+                    >
                       {item.title}
                     </h4>
                     <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#c0520d', marginBottom: '0.4rem' }}>

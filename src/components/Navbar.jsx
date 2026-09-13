@@ -43,15 +43,49 @@ export default function Navbar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Compute live search matches
+  // Compute live search matches with smart relevance scoring
   const trimmedQ = (searchQuery || '').toLowerCase().trim();
+
+  const getRelevance = (p, q) => {
+    const title = (p.title || '').toLowerCase();
+    const cat = (p.category || '').toLowerCase().replace(/-/g, ' ');
+    const words = title.split(/\s+/);
+    const catWords = cat.split(/\s+/);
+    let score = 0;
+
+    if (title.startsWith(q)) score += 150;
+    else if (words.some(w => w.startsWith(q))) score += 100;
+    else if (cat.startsWith(q) || catWords.some(w => w.startsWith(q))) score += 80;
+    else if (title.includes(q)) score += 50;
+    else if (cat.includes(q)) score += 35;
+
+    if (q.length <= 2) {
+      const matWords = (p.materials || '').toLowerCase().split(/[\s,]+/);
+      if (matWords.some(w => w.startsWith(q))) score += 15;
+    } else {
+      if ((p.materials || '').toLowerCase().includes(q)) score += 15;
+      if ((p.description || '').toLowerCase().includes(q)) score += 10;
+    }
+    return score;
+  };
+
   const searchMatches = (trimmedQ && products && products.length > 0)
-    ? products.filter(p => 
-        (p.title && p.title.toLowerCase().includes(trimmedQ)) ||
-        (p.materials && p.materials.toLowerCase().includes(trimmedQ)) ||
-        (p.category && p.category.toLowerCase().replace(/-/g, ' ').includes(trimmedQ)) ||
-        (p.description && p.description.toLowerCase().includes(trimmedQ))
-      ).slice(0, 5)
+    ? products
+        .map(p => ({ product: p, score: getRelevance(p, trimmedQ) }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6)
+        .map(item => item.product)
+    : [];
+
+  // Compute matched categories for instant navigation
+  const matchedCategories = (trimmedQ && categories && categories.length > 0)
+    ? categories.filter(c => {
+        const name = (c.name || '').toLowerCase();
+        const slug = (c.slug || '').toLowerCase().replace(/-/g, ' ');
+        const words = name.split(/\s+/);
+        return name.startsWith(trimmedQ) || words.some(w => w.startsWith(trimmedQ)) || name.includes(trimmedQ) || slug.includes(trimmedQ);
+      }).slice(0, 4)
     : [];
 
   const handleSearchKeyDown = (e) => {
@@ -250,6 +284,57 @@ export default function Navbar({
                       View in gallery ↓
                     </span>
                   </div>
+
+                  {/* Matching Categories quick-links */}
+                  {matchedCategories.length > 0 && (
+                    <div style={{
+                      padding: '0.65rem 1rem',
+                      borderBottom: '1px solid #f4efe8',
+                      background: '#fffbf5'
+                    }}>
+                      <div style={{ fontSize: '0.68rem', color: '#78716c', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.4rem', letterSpacing: '0.04em' }}>
+                        Matching Categories
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                        {matchedCategories.map(cat => (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => {
+                              setIsSearchFocused(false);
+                              onSelectCategory(cat.slug || cat.id);
+                              if (onSearchSubmit) onSearchSubmit();
+                            }}
+                            style={{
+                              background: '#fff7ed',
+                              color: '#c2410c',
+                              border: '1px solid #fed7aa',
+                              borderRadius: 'var(--radius-full)',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              padding: '0.28rem 0.75rem',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                              transition: 'all 0.15s ease'
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = '#ffedd5';
+                              e.currentTarget.style.borderColor = '#fdba74';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = '#fff7ed';
+                              e.currentTarget.style.borderColor = '#fed7aa';
+                            }}
+                          >
+                            <span>{cat.name}</span>
+                            <ArrowRight size={12} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* List of matched items */}
                   {searchMatches.length > 0 ? (

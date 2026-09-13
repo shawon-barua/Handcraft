@@ -12,6 +12,7 @@ export default function CheckoutModal({
   cart,
   currency = '৳',
   settings,
+  onOpenDetail,
   onOrderSuccess
 }) {
   if (!isOpen) return null;
@@ -32,7 +33,8 @@ export default function CheckoutModal({
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleCheckout = async (channel = 'whatsapp') => {
@@ -45,38 +47,40 @@ export default function CheckoutModal({
       return;
     }
     if (!formData.address.trim()) {
-      setErrorMessage('Please enter your delivery street address.');
+      setErrorMessage('Please enter your delivery address.');
       return;
     }
 
-    setErrorMessage('');
     setIsSubmitting(true);
+    setErrorMessage('');
 
     try {
+      // 1. Record order in database
+      const orderPayload = {
+        customer: formData,
+        items: cart,
+        channel: channel,
+        totalAmount: subtotal,
+        notes: formData.notes
+      };
+
       let order = null;
       try {
-        const response = await fetch('/api/orders', {
+        const res = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            customer: formData,
-            items: cart,
-            channel: channel,
-            totalAmount: subtotal
-          })
+          body: JSON.stringify(orderPayload)
         });
-
-        if (response.ok) {
-          order = await response.json();
+        if (res.ok) {
+          order = await res.json();
         }
-      } catch (err) {
-        console.warn('Backend order recording skipped (running in static/offline mode):', err);
+      } catch (e) {
+        console.warn('Backend order sync skipped:', e);
       }
 
-      // Generate graceful client fallback order ID if backend is offline/static
       if (!order) {
         order = {
-          id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+          id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
           customer: formData,
           items: cart,
           channel: channel,
@@ -88,49 +92,73 @@ export default function CheckoutModal({
 
       setCompletedOrder(order);
 
-      // 2. Format detailed message for WhatsApp or Email
-      const itemsListText = cart
-        .map((item, idx) => `${idx + 1}. ${item.title} (x${item.quantity}) - ${currency}${item.price * item.quantity}`)
-        .join('\n');
+      const siteOrigin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://falgunishandcraft.com';
+
+      // 2. Format detailed message for WhatsApp or Email with live clickable links
+      const itemsListTextWa = cart
+        .map((item, idx) => {
+          const itemUrl = `${siteOrigin}/?product=${encodeURIComponent(item.id)}`;
+          return `${idx + 1}. *${item.title}* (x${item.quantity}) - Tk ${(item.price * item.quantity).toLocaleString()}\n   Link: ${itemUrl}`;
+        })
+        .join('\n\n');
+
+      const itemsListTextEmail = cart
+        .map((item, idx) => {
+          const itemUrl = `${siteOrigin}/?product=${encodeURIComponent(item.id)}`;
+          return `${idx + 1}. ${item.title} (Qty: ${item.quantity}) - Tk ${(item.price * item.quantity).toLocaleString()}\n   Link: ${itemUrl}`;
+        })
+        .join('\n\n');
 
       const ownerWhatsApp = (settings?.whatsappNumber || '8801855636389').replace(/[^0-9]/g, '').replace(/^0/, '880');
       const ownerEmail = settings?.email || 'falgunihandcraft@gmail.com';
 
       if (channel === 'whatsapp') {
         const waMessage = 
-`✨ *NEW HANDCRAFTED ORDER & INQUIRY* ✨
-🔖 *Order Ref:* #${order.id}
-👤 *Customer:* ${formData.name}
-📱 *Phone:* ${formData.phone}
-📍 *Address:* ${formData.address}, ${formData.city}
-📝 *Customization Request:* ${formData.notes ? formData.notes : 'Standard handcrafted sizing'}
+`*NEW HANDCRAFTED ORDER & INQUIRY*
+*Order Ref:* #${order.id}
+*Customer:* ${formData.name}
+*Phone:* ${formData.phone}
+*Address:* ${formData.address}, ${formData.city}
+*Customization Note:* ${formData.notes ? formData.notes : 'Standard handcrafted sizing'}
 
-🛍️ *ORDERED CART ITEMS:*
-${itemsListText}
+*ORDERED CART ITEMS:*
+${itemsListTextWa}
 
-💰 *Subtotal:* ${currency} ${subtotal.toLocaleString()}
+*Subtotal:* Tk ${subtotal.toLocaleString()}
 
 Hello Falguni Handcraft! I placed this order from your website. Please check my items and let's finalize the order and delivery details!`;
 
         const waUrl = `https://wa.me/${ownerWhatsApp}?text=${encodeURIComponent(waMessage)}`;
-        window.open(waUrl, '_blank');
+        const w = window.open(waUrl, '_blank');
+        if (!w || w.closed || typeof w.closed === 'undefined') {
+          window.location.href = waUrl;
+        }
       } else {
-        const emailSubject = encodeURIComponent(`New Handcrafted Order Inquiry - #${order.id} (${formData.name})`);
-        const emailBody = encodeURIComponent(
+        const emailSubjectText = `New Handcrafted Order Inquiry - #${order.id} (${formData.name})`;
+        const emailBodyPlain = 
 `Order Reference: #${order.id}
 Customer Name: ${formData.name}
 Phone: ${formData.phone}
 Delivery Address: ${formData.address}, ${formData.city}
 Customization Note: ${formData.notes || 'None'}
 
-Cart Items:
-${itemsListText}
+Ordered Cart Items:
+${itemsListTextEmail}
 
 Total Estimated Amount: ${currency} ${subtotal.toLocaleString()}
 
-Hello, I would like to talk with you and confirm this order.`);
-        
-        window.open(`mailto:${ownerEmail}?subject=${emailSubject}&body=${emailBody}`, '_self');
+Hello Falguni Handcraft, I placed this order from your website. Please check my items and let's finalize the order and delivery details!`;
+
+        const isGmail = ownerEmail.toLowerCase().includes('gmail.com');
+        if (isGmail) {
+          const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(ownerEmail)}&su=${encodeURIComponent(emailSubjectText)}&body=${encodeURIComponent(emailBodyPlain)}`;
+          const w = window.open(gmailUrl, '_blank');
+          if (!w || w.closed || typeof w.closed === 'undefined') {
+            window.location.href = `mailto:${ownerEmail}?subject=${encodeURIComponent(emailSubjectText)}&body=${encodeURIComponent(emailBodyPlain)}`;
+          }
+        } else {
+          window.location.href = `mailto:${ownerEmail}?subject=${encodeURIComponent(emailSubjectText)}&body=${encodeURIComponent(emailBodyPlain)}`;
+        }
       }
 
       if (onOrderSuccess) {
@@ -138,11 +166,13 @@ Hello, I would like to talk with you and confirm this order.`);
       }
     } catch (err) {
       console.error('Checkout error:', err);
-      setErrorMessage('Could not record order. Please verify your connection or try again.');
+      setErrorMessage('Could not complete checkout. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleSubmit = handleCheckout;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -267,9 +297,29 @@ Hello, I would like to talk with you and confirm this order.`);
               }}>
                 <div>
                   <span style={{ fontSize: '0.8rem', color: '#78716c' }}>Ordering {totalItems} item(s):</span>
-                  <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1c1917', marginTop: '0.2rem' }}>
-                    {cart.slice(0, 2).map(i => i.title).join(', ')}
-                    {cart.length > 2 && ` + ${cart.length - 2} more`}
+                  <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1c1917', marginTop: '0.2rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                    {cart.map((i, idx) => (
+                      <span key={i.id || idx}>
+                        <button
+                          type="button"
+                          onClick={() => onOpenDetail && onOpenDetail(i)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            color: '#c0520d',
+                            textDecoration: 'underline',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            fontWeight: 600
+                          }}
+                          title="Click to view product details"
+                        >
+                          {i.title} (x{i.quantity})
+                        </button>
+                        {idx < cart.length - 1 && ', '}
+                      </span>
+                    ))}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>

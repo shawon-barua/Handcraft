@@ -36,10 +36,11 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Rate Limiters
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 100,
+  skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many login attempts. Please try again in 15 minutes.' }
+  message: { error: 'Too many failed login attempts. Please try again in 15 minutes.' }
 });
 
 const orderLimiter = rateLimit({
@@ -55,34 +56,36 @@ const DATA_DIR = path.join(__dirname, 'data');
 const STORE_FILE = path.join(DATA_DIR, 'store.json');
 const INITIAL_FILE = path.join(DATA_DIR, 'initialData.json');
 
-const UPLOADS_DIR = path.join(__dirname, '../public/uploads');
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 
 // -------------------------------------------------------------
-// IN-MEMORY STORE CACHING & ASYNC PERSISTENCE
+// IN-MEMORY STORE CACHING & ATOMIC PERSISTENCE
 // -------------------------------------------------------------
 let memoryStore = null;
-let saveTimer = null;
 
 function saveStoreSync(data) {
   try {
-    fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    const tmpFile = `${STORE_FILE}.tmp`;
+    fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
+    fs.renameSync(tmpFile, STORE_FILE); // Atomic write: prevents 0-byte file on crash
   } catch (err) {
     console.error('Error synchronously saving store file:', err);
   }
 }
 
 function loadStore() {
-  if (memoryStore) return memoryStore;
-
   try {
     let storeData;
-    if (!fs.existsSync(STORE_FILE)) {
+    // Empty/corrupted file check (< 5 bytes means corrupted or blank file)
+    if (!fs.existsSync(STORE_FILE) || fs.statSync(STORE_FILE).size < 5) {
       const initialData = fs.readFileSync(INITIAL_FILE, 'utf-8');
-      fs.writeFileSync(STORE_FILE, initialData, 'utf-8');
+      const tmpFile = `${STORE_FILE}.tmp`;
+      fs.writeFileSync(tmpFile, initialData, 'utf-8');
+      fs.renameSync(tmpFile, STORE_FILE);
       storeData = JSON.parse(initialData);
     } else {
       const data = fs.readFileSync(STORE_FILE, 'utf-8');
@@ -129,22 +132,22 @@ function loadStore() {
     memoryStore = storeData;
     return memoryStore;
   } catch (err) {
-    console.error('Error reading store file:', err);
-    memoryStore = { categories: [], products: [], orders: [], settings: {}, admins: [] };
-    return memoryStore;
+    console.error('Error reading store file, falling back to initial data:', err);
+    try {
+      const initialData = fs.readFileSync(INITIAL_FILE, 'utf-8');
+      memoryStore = JSON.parse(initialData);
+      saveStoreSync(memoryStore);
+      return memoryStore;
+    } catch {
+      memoryStore = { categories: [], products: [], orders: [], settings: {}, admins: [] };
+      return memoryStore;
+    }
   }
 }
 
 function saveStore(data) {
   memoryStore = data;
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    try {
-      await fs.promises.writeFile(STORE_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (err) {
-      console.error('Error asynchronously saving store file:', err);
-    }
-  }, 100);
+  saveStoreSync(data);
 }
 
 // Preload store on boot
@@ -449,12 +452,35 @@ app.get('/api/products', (req, res) => {
   }
 
   if (search) {
-    const q = search.toLowerCase();
-    products = products.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      (p.description && p.description.toLowerCase().includes(q)) ||
-      (p.materials && p.materials.toLowerCase().includes(q))
-    );
+    const q = search.toLowerCase().trim();
+    const getRelevance = (p) => {
+      const title = (p.title || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase().replace(/-/g, ' ');
+      const words = title.split(/\s+/);
+      const catWords = cat.split(/\s+/);
+      let score = 0;
+
+      if (title.startsWith(q)) score += 150;
+      else if (words.some(w => w.startsWith(q))) score += 100;
+      else if (cat.startsWith(q) || catWords.some(w => w.startsWith(q))) score += 80;
+      else if (title.includes(q)) score += 50;
+      else if (cat.includes(q)) score += 35;
+
+      if (q.length <= 2) {
+        const matWords = (p.materials || '').toLowerCase().split(/[\s,]+/);
+        if (matWords.some(w => w.startsWith(q))) score += 15;
+      } else {
+        if ((p.materials || '').toLowerCase().includes(q)) score += 15;
+        if ((p.description || '').toLowerCase().includes(q)) score += 10;
+      }
+      return score;
+    };
+
+    products = products
+      .map(p => ({ product: p, score: getRelevance(p) }))
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.product);
   }
 
   if (minPrice) {
@@ -657,6 +683,24 @@ app.patch('/api/orders/:id', requireAdmin, (req, res) => {
   res.json(order);
 });
 
+app.delete('/api/orders/:id', requireAdmin, (req, res) => {
+  const db = loadStore();
+  const index = (db.orders || []).findIndex(o => o.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+  db.orders.splice(index, 1);
+  saveStore(db);
+  res.json({ success: true, message: 'Order deleted successfully' });
+});
+
+app.delete('/api/orders', requireAdmin, (req, res) => {
+  const db = loadStore();
+  db.orders = [];
+  saveStore(db);
+  res.json({ success: true, message: 'All orders cleared successfully' });
+});
+
 // -------------------------------------------------------------
 // ADMIN STATS & ANALYTICS (Protected)
 // -------------------------------------------------------------
@@ -727,9 +771,9 @@ if (fs.existsSync(DIST_DIR)) {
     maxAge: '1h'
   }));
 
-  app.get('*', (req, res, next) => {
+  app.get('*', (req, res) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-      return next();
+      return res.status(404).json({ error: 'Resource not found' });
     }
     res.sendFile(path.join(DIST_DIR, 'index.html'));
   });

@@ -50,3 +50,8 @@ desktop.ini
 coverage/
 playwright-report/
 test-results/
+
+# Dynamic data & upload caches
+server/data/*.tmp
+server/data/uploads/*
+!server/data/uploads/.gitkeep

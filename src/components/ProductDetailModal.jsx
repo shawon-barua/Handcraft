@@ -75,15 +75,19 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
     }
   };
 
+  const siteOrigin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://falgunishandcraft.com';
+  const productUrl = `${siteOrigin}/?product=${encodeURIComponent(product.id)}`;
+
   const whatsappNumber = (settings?.whatsappNumber || '8801855636389').replace(/[^0-9]/g, '').replace(/^0/, '880');
   const getWhatsAppLink = () => {
     const text = encodeURIComponent(
       `Hello Falguni Handcraft! I am interested in ordering this handcrafted item:\n\n` +
       `*Product:* ${product.title}\n` +
-      `*Price:* ৳${product.price.toLocaleString()} BDT\n` +
+      `*Price:* Tk ${product.price?.toLocaleString()}\n` +
       `*Quantity:* ${quantity}\n` +
-      `*Estimated Total:* ৳${(product.price * quantity).toLocaleString()} BDT\n\n` +
-      `Please let me know how we can proceed !`
+      `*Estimated Total:* Tk ${((product.price || 0) * quantity).toLocaleString()}\n` +
+      `*Item Link:* ${productUrl}\n\n` +
+      `Please let me know how we can proceed!`
     );
     return `https://wa.me/${whatsappNumber}?text=${text}`;
   };
@@ -96,11 +100,12 @@ export default function ProductDetailModal({ product, settings, isOpen, onClose,
 I want to inquire about purchasing this handcrafted item:
 
 Product: ${product.title}
-Price: ৳${product.price?.toLocaleString()} BDT
+Price: Tk ${product.price?.toLocaleString()}
 Quantity: ${quantity}
-Estimated Total: ৳${((product.price || 0) * quantity).toLocaleString()} BDT
+Estimated Total: Tk ${((product.price || 0) * quantity).toLocaleString()}
+Item Link: ${productUrl}
 
-Please let me know how we can proceed !`;
+Please let me know how we can proceed!`;
 
   const getEmailLink = () => {
     const subject = encodeURIComponent(emailSubject);
@@ -143,10 +148,10 @@ Please let me know how we can proceed !`;
       navigator.share({
         title: product.title,
         text: `Check out ${product.title} on Falguni Handcraft`,
-        url: window.location.href,
+        url: productUrl,
       }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(productUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -562,10 +567,8 @@ Please let me know how we can proceed !`;
               {/* Delivery info */}
               <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.72rem', color: '#a8a29e', marginTop: '0.4rem' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <Package size={13} /> Eco-safe gift pack
+                  <Package size={13} /> Delivery All Over Bangladesh
                 </span>
-                <span>•</span>
-                <span>Home Delivery All Over Bangladesh</span>
                 <span>•</span>
                 <span>Cash on Delivery</span>
               </div>
