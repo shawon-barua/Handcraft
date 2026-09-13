@@ -8,8 +8,8 @@ import {
   LayoutDashboard, ShoppingBag, FolderTree, Package, Settings, 
   DollarSign, TrendingUp, Clock, CheckCircle2, MessageSquare, 
   Edit3, Trash2, Plus, Save, Search, Filter, ExternalLink, Sparkles, RefreshCw, AlertCircle,
-  Upload, Image as ImageIcon, Check, X, ArrowRight, ArrowDown, XCircle, ChevronRight, Phone, MapPin, Eye,
-  ShieldCheck, Lock, User, Users, ShieldAlert, UserCheck, History
+  Upload, Image as ImageIcon, Check, X, ArrowRight, ArrowDown, XCircle, ChevronRight, Phone, MapPin, Eye, EyeOff,
+  ShieldCheck, Lock, Key, User, Users, ShieldAlert, UserCheck, History
 } from 'lucide-react';
 
 export default function AdminPanel({
@@ -34,6 +34,25 @@ export default function AdminPanel({
   const [newAdminData, setNewAdminData] = useState({ name: '', email: '', password: '', role: 'admin' });
   const [adminActionError, setAdminActionError] = useState('');
   const [adminActionSuccess, setAdminActionSuccess] = useState('');
+
+  // Password Change & Reset states
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordChangeData, setPasswordChangeData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordChangeError, setPasswordChangeError] = useState('');
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState('');
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+
+  // SuperAdmin direct reset state for another admin
+  const [resetTargetAdmin, setResetTargetAdmin] = useState(null);
+  const [adminResetNewPassword, setAdminResetNewPassword] = useState('');
+  const [showResetPw, setShowResetPw] = useState(false);
 
   // Filter & Search states
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
@@ -291,6 +310,86 @@ export default function AdminPanel({
       }
     } catch (err) {
       console.error('Failed to clear orders:', err);
+    }
+  };
+
+  // Handle Change Own Password
+  const handleChangeOwnPassword = async (e) => {
+    e.preventDefault();
+    setPasswordChangeError('');
+    setPasswordChangeSuccess('');
+
+    if (!passwordChangeData.currentPassword) {
+      setPasswordChangeError('Please enter your current password.');
+      return;
+    }
+
+    if (!passwordChangeData.newPassword || passwordChangeData.newPassword.trim().length < 6) {
+      setPasswordChangeError('New password must be at least 6 characters long.');
+      return;
+    }
+
+    if (passwordChangeData.newPassword !== passwordChangeData.confirmPassword) {
+      setPasswordChangeError('New password and confirmation do not match.');
+      return;
+    }
+
+    setIsSubmittingPassword(true);
+    try {
+      const res = await authFetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwordChangeData.currentPassword,
+          newPassword: passwordChangeData.newPassword.trim()
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPasswordChangeError(data.error || 'Failed to change password');
+      } else {
+        setPasswordChangeSuccess(data.message || 'Password changed successfully!');
+        setPasswordChangeData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        setTimeout(() => {
+          setShowPasswordModal(false);
+          setPasswordChangeSuccess('');
+        }, 2200);
+      }
+    } catch (err) {
+      setPasswordChangeError('A network error occurred. Please try again.');
+    } finally {
+      setIsSubmittingPassword(false);
+    }
+  };
+
+  // Handle Reset Team Member Password (SuperAdmin only)
+  const handleResetTeamMemberPassword = async (e) => {
+    e.preventDefault();
+    if (!resetTargetAdmin || !adminResetNewPassword || adminResetNewPassword.trim().length < 6) {
+      setAdminActionError('New password must be at least 6 characters long.');
+      return;
+    }
+
+    try {
+      const res = await authFetch('/api/auth/reset-admin-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminId: resetTargetAdmin.id,
+          newPassword: adminResetNewPassword.trim()
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAdminActionError(data.error || 'Failed to reset password');
+      } else {
+        setAdminActionSuccess(data.message || 'Password updated successfully!');
+        setResetTargetAdmin(null);
+        setAdminResetNewPassword('');
+        setTimeout(() => setAdminActionSuccess(''), 4000);
+      }
+    } catch (err) {
+      setAdminActionError('Failed to reset password. Please try again.');
     }
   };
 
@@ -569,7 +668,28 @@ export default function AdminPanel({
             </h1>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.6rem' }}>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <button
+              onClick={() => {
+                setPasswordChangeData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                setPasswordChangeError('');
+                setPasswordChangeSuccess('');
+                setShowPasswordModal(true);
+              }}
+              className="btn btn-secondary btn-sm"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                background: '#ffffff',
+                borderColor: '#fed7aa',
+                color: '#c0520d',
+                fontWeight: 700
+              }}
+              title="Change your admin password"
+            >
+              <Key size={14} /> Change Password
+            </button>
             <button
               onClick={fetchData}
               className="btn btn-secondary btn-sm"
@@ -2047,6 +2167,88 @@ export default function AdminPanel({
                 <Save size={16} /> Save Settings
               </button>
             </form>
+
+            {/* Admin Password & Account Security Section */}
+            <div style={{
+              marginTop: '2.5rem',
+              paddingTop: '2rem',
+              borderTop: '2px dashed #e7e2db'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  background: '#fff7ed',
+                  border: '1px solid #fed7aa',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#e26d21'
+                }}>
+                  <Lock size={18} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', color: '#1c1917', fontWeight: 700 }}>
+                    Admin Password & Account Security
+                  </h3>
+                  <p style={{ fontSize: '0.82rem', color: '#78716c' }}>
+                    Protect your store by updating your administrator password securely.
+                  </p>
+                </div>
+              </div>
+
+              <div style={{
+                background: '#faf8f5',
+                border: '1px solid #e7e2db',
+                borderRadius: 'var(--radius-md)',
+                padding: '1.5rem',
+                marginTop: '1rem',
+                maxWidth: '650px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.2rem' }}>
+                  <div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1c1917' }}>
+                      Logged in Account:
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#c0520d', fontWeight: 600, marginTop: '0.2rem' }}>
+                      {currentUser?.name || 'Administrator'} ({currentUser?.email})
+                    </div>
+                    <div style={{ fontSize: '0.76rem', color: '#78716c', marginTop: '0.2rem' }}>
+                      Role: <strong style={{ color: currentUser?.role === 'superadmin' ? '#c0520d' : '#1d4ed8' }}>
+                        {currentUser?.role === 'superadmin' ? 'Super Admin' : 'Standard Admin'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPasswordChangeData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                      setPasswordChangeError('');
+                      setPasswordChangeSuccess('');
+                      setShowPasswordModal(true);
+                    }}
+                    className="btn btn-secondary"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.45rem',
+                      background: '#ffffff',
+                      borderColor: '#fed7aa',
+                      color: '#c0520d',
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                      padding: '0.6rem 1.2rem',
+                      boxShadow: '0 2px 6px rgba(226, 109, 33, 0.12)'
+                    }}
+                  >
+                    <Key size={16} /> Change Password
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -2324,49 +2526,79 @@ export default function AdminPanel({
 
                             {/* Security Actions */}
                             <td style={{ padding: '1rem 1.4rem', textAlign: 'right' }}>
-                              {isSuperAdmin ? (
-                                <span 
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '0.35rem',
-                                    color: '#059669',
-                                    fontSize: '0.78rem',
-                                    fontWeight: 600,
-                                    background: '#ecfdf5',
-                                    border: '1px solid #a7f3d0',
-                                    padding: '0.3rem 0.65rem',
-                                    borderRadius: '6px'
-                                  }}
-                                  title="The primary Super Admin account is permanently locked against deletion"
-                                >
-                                  <Lock size={13} />
-                                  Protected (Undeletable)
-                                </span>
-                              ) : (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                                 <button
-                                  onClick={() => handleDeleteAdmin(admin.id, admin.name)}
+                                  type="button"
+                                  onClick={() => {
+                                    setResetTargetAdmin(admin);
+                                    setAdminResetNewPassword('');
+                                    setAdminActionError('');
+                                    setAdminActionSuccess('');
+                                    setShowResetPw(false);
+                                  }}
                                   className="btn btn-secondary btn-sm"
                                   style={{
-                                    color: '#dc2626',
-                                    borderColor: '#fca5a5',
-                                    background: '#fff',
+                                    color: '#0369a1',
+                                    borderColor: '#bae6fd',
+                                    background: '#f0f9ff',
                                     fontSize: '0.78rem',
-                                    padding: '0.35rem 0.75rem',
+                                    padding: '0.35rem 0.7rem',
                                     borderRadius: '6px',
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '0.35rem',
                                     cursor: 'pointer'
                                   }}
-                                  onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
-                                  onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff'; }}
-                                  title={`Remove ${admin.name} from admin team`}
+                                  title={`Reset password for ${admin.name}`}
                                 >
-                                  <Trash2 size={13} />
-                                  Remove Admin
+                                  <Key size={13} />
+                                  Reset Password
                                 </button>
-                              )}
+
+                                {isSuperAdmin ? (
+                                  <span 
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.35rem',
+                                      color: '#059669',
+                                      fontSize: '0.78rem',
+                                      fontWeight: 600,
+                                      background: '#ecfdf5',
+                                      border: '1px solid #a7f3d0',
+                                      padding: '0.3rem 0.65rem',
+                                      borderRadius: '6px'
+                                    }}
+                                    title="The primary Super Admin account is permanently locked against deletion"
+                                  >
+                                    <Lock size={13} />
+                                    Protected
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => handleDeleteAdmin(admin.id, admin.name)}
+                                    className="btn btn-secondary btn-sm"
+                                    style={{
+                                      color: '#dc2626',
+                                      borderColor: '#fca5a5',
+                                      background: '#fff',
+                                      fontSize: '0.78rem',
+                                      padding: '0.35rem 0.75rem',
+                                      borderRadius: '6px',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.35rem',
+                                      cursor: 'pointer'
+                                    }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff'; }}
+                                    title={`Remove ${admin.name} from admin team`}
+                                  >
+                                    <Trash2 size={13} />
+                                    Remove
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         );
@@ -2871,6 +3103,318 @@ export default function AdminPanel({
                   </button>
                   <button type="submit" className="btn btn-primary">
                     Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* CHANGE OWN PASSWORD MODAL                                     */}
+        {/* ------------------------------------------------------------- */}
+        {showPasswordModal && (
+          <div className="modal-overlay" onClick={() => !isSubmittingPassword && setShowPasswordModal(false)}>
+            <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ padding: '1.75rem', maxWidth: '480px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: '#fff7ed',
+                    border: '1px solid #fed7aa',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#e26d21'
+                  }}>
+                    <Key size={18} />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1.2rem', color: '#1c1917', fontWeight: 700 }}>
+                      Change Admin Password
+                    </h2>
+                    <p style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                      Update your login password for {currentUser?.name || currentUser?.email}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  disabled={isSubmittingPassword}
+                  style={{ background: 'none', border: 'none', color: '#78716c', cursor: 'pointer', padding: '4px' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {passwordChangeSuccess && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  padding: '0.85rem 1rem',
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '8px',
+                  color: '#166534',
+                  fontSize: '0.84rem',
+                  marginBottom: '1.2rem'
+                }}>
+                  <CheckCircle2 size={16} color="#16a34a" />
+                  <span>{passwordChangeSuccess}</span>
+                </div>
+              )}
+
+              {passwordChangeError && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  padding: '0.85rem 1rem',
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '8px',
+                  color: '#b91c1c',
+                  fontSize: '0.84rem',
+                  marginBottom: '1.2rem'
+                }}>
+                  <AlertCircle size={16} color="#dc2626" />
+                  <span>{passwordChangeError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleChangeOwnPassword}>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                    Current Password *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showCurrentPw ? 'text' : 'password'}
+                      placeholder="Enter your current password"
+                      value={passwordChangeData.currentPassword}
+                      onChange={e => setPasswordChangeData({ ...passwordChangeData, currentPassword: e.target.value })}
+                      className="form-input"
+                      style={{ paddingRight: '2.5rem' }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPw(!showCurrentPw)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.6rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: '#78716c',
+                        cursor: 'pointer',
+                        padding: '4px'
+                      }}
+                      title={showCurrentPw ? 'Hide password' : 'Show password'}
+                    >
+                      {showCurrentPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                    New Password (minimum 6 characters) *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showNewPw ? 'text' : 'password'}
+                      placeholder="Enter new strong password"
+                      value={passwordChangeData.newPassword}
+                      onChange={e => setPasswordChangeData({ ...passwordChangeData, newPassword: e.target.value })}
+                      className="form-input"
+                      style={{ paddingRight: '2.5rem' }}
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPw(!showNewPw)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.6rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: '#78716c',
+                        cursor: 'pointer',
+                        padding: '4px'
+                      }}
+                      title={showNewPw ? 'Hide password' : 'Show password'}
+                    >
+                      {showNewPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '1.4rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                    Confirm New Password *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showConfirmPw ? 'text' : 'password'}
+                      placeholder="Re-type new password"
+                      value={passwordChangeData.confirmPassword}
+                      onChange={e => setPasswordChangeData({ ...passwordChangeData, confirmPassword: e.target.value })}
+                      className="form-input"
+                      style={{ paddingRight: '2.5rem' }}
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPw(!showConfirmPw)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.6rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: '#78716c',
+                        cursor: 'pointer',
+                        padding: '4px'
+                      }}
+                      title={showConfirmPw ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordModal(false)}
+                    className="btn btn-secondary"
+                    disabled={isSubmittingPassword}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={isSubmittingPassword}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    {isSubmittingPassword ? (
+                      <>
+                        <RefreshCw size={14} className="spin" /> Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={14} /> Update Password
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* SUPERADMIN RESET TEAM MEMBER PASSWORD MODAL                  */}
+        {/* ------------------------------------------------------------- */}
+        {resetTargetAdmin && (
+          <div className="modal-overlay" onClick={() => setResetTargetAdmin(null)}>
+            <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ padding: '1.75rem', maxWidth: '480px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: '#f0f9ff',
+                    border: '1px solid #bae6fd',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#0284c7'
+                  }}>
+                    <Key size={18} />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1.2rem', color: '#1c1917', fontWeight: 700 }}>
+                      Reset Admin Password
+                    </h2>
+                    <p style={{ fontSize: '0.78rem', color: '#78716c' }}>
+                      Setting new password for {resetTargetAdmin.name} ({resetTargetAdmin.email})
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setResetTargetAdmin(null)}
+                  style={{ background: 'none', border: 'none', color: '#78716c', cursor: 'pointer', padding: '4px' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleResetTeamMemberPassword}>
+                <div className="form-group" style={{ marginBottom: '1.4rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                    New Password (minimum 6 characters) *
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showResetPw ? 'text' : 'password'}
+                      placeholder="Enter new password for this admin"
+                      value={adminResetNewPassword}
+                      onChange={e => setAdminResetNewPassword(e.target.value)}
+                      className="form-input"
+                      style={{ paddingRight: '2.5rem' }}
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPw(!showResetPw)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.6rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: '#78716c',
+                        cursor: 'pointer',
+                        padding: '4px'
+                      }}
+                      title={showResetPw ? 'Hide password' : 'Show password'}
+                    >
+                      {showResetPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setResetTargetAdmin(null)}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    <Check size={15} /> Confirm New Password
                   </button>
                 </div>
               </form>

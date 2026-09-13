@@ -369,6 +369,77 @@ app.delete('/api/auth/admins/:id', requireSuperAdmin, (req, res) => {
   }
 });
 
+// Change own password (Protected: Any logged-in Admin)
+app.post('/api/auth/change-password', requireAdmin, (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (String(newPassword).trim().length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    const db = loadStore();
+    const admin = (db.admins || []).find(
+      a => a.id === req.user.id || a.email.toLowerCase() === req.user.email.toLowerCase()
+    );
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin account not found' });
+    }
+
+    // Verify current password
+    let isMatch = false;
+    if (admin.password.startsWith('$2a$') || admin.password.startsWith('$2b$')) {
+      isMatch = bcrypt.compareSync(currentPassword, admin.password);
+    } else {
+      isMatch = admin.password === currentPassword;
+    }
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Incorrect current password. Please verify and try again.' });
+    }
+
+    // Update password with bcrypt hash
+    admin.password = bcrypt.hashSync(newPassword.trim(), 10);
+    saveStore(db);
+
+    res.json({ success: true, message: 'Your password has been changed successfully!' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// Reset an admin's password (Protected: Super Admin only)
+app.post('/api/auth/reset-admin-password', requireSuperAdmin, (req, res) => {
+  try {
+    const { adminId, newPassword } = req.body || {};
+    if (!adminId || !newPassword) {
+      return res.status(400).json({ error: 'Admin ID and new password are required' });
+    }
+
+    if (String(newPassword).trim().length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    const db = loadStore();
+    const admin = (db.admins || []).find(a => a.id === adminId);
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin account not found' });
+    }
+
+    admin.password = bcrypt.hashSync(newPassword.trim(), 10);
+    saveStore(db);
+
+    res.json({ success: true, message: `Password for ${admin.name} has been updated successfully!` });
+  } catch (err) {
+    console.error('Reset admin password error:', err);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
 // -------------------------------------------------------------
 // SETTINGS
 // -------------------------------------------------------------
