@@ -92,6 +92,28 @@ export default function CheckoutModal({
 
       setCompletedOrder(order);
 
+      // Track Google Analytics 4 Ecommerce Purchase & Conversion Event
+      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+        window.gtag('event', 'purchase', {
+          transaction_id: order.id,
+          value: subtotal,
+          currency: 'BDT',
+          items: cart.map(item => ({
+            item_id: item.id,
+            item_name: item.title,
+            item_category: item.category,
+            price: item.price,
+            quantity: item.quantity
+          }))
+        });
+        window.gtag('event', 'generate_lead', {
+          event_category: 'Order',
+          event_label: channel,
+          value: subtotal,
+          currency: 'BDT'
+        });
+      }
+
       const siteOrigin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://falgunishandcraft.com';
 
       // 2. Format detailed message for WhatsApp or Email with live clickable links
