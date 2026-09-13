@@ -344,9 +344,20 @@ export default function AdminPanel({
           newPassword: passwordChangeData.newPassword.trim()
         })
       });
-      const data = await res.json();
+
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        // Non-JSON response (e.g. 404 / 500 HTML)
+      }
+
       if (!res.ok) {
-        setPasswordChangeError(data.error || 'Failed to change password');
+        if (res.status === 404) {
+          setPasswordChangeError('Endpoint not found (404). Please restart the Node.js app in cPanel Setup Node.js App.');
+        } else {
+          setPasswordChangeError(data.error || `Server error (${res.status}). Please try again.`);
+        }
       } else {
         setPasswordChangeSuccess(data.message || 'Password changed successfully!');
         setPasswordChangeData({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -356,7 +367,8 @@ export default function AdminPanel({
         }, 2200);
       }
     } catch (err) {
-      setPasswordChangeError('A network error occurred. Please try again.');
+      console.error('Password change error:', err);
+      setPasswordChangeError('Network or connection error. Please verify server is reachable and try again.');
     } finally {
       setIsSubmittingPassword(false);
     }
@@ -379,9 +391,20 @@ export default function AdminPanel({
           newPassword: adminResetNewPassword.trim()
         })
       });
-      const data = await res.json();
+
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        // Non-JSON response
+      }
+
       if (!res.ok) {
-        setAdminActionError(data.error || 'Failed to reset password');
+        if (res.status === 404) {
+          setAdminActionError('Endpoint not found (404). Please restart the Node.js app in cPanel.');
+        } else {
+          setAdminActionError(data.error || `Failed to reset password (${res.status}).`);
+        }
       } else {
         setAdminActionSuccess(data.message || 'Password updated successfully!');
         setResetTargetAdmin(null);
@@ -389,7 +412,8 @@ export default function AdminPanel({
         setTimeout(() => setAdminActionSuccess(''), 4000);
       }
     } catch (err) {
-      setAdminActionError('Failed to reset password. Please try again.');
+      console.error('Reset password error:', err);
+      setAdminActionError('Failed to reset password. Please check network connection.');
     }
   };
 
