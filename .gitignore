@@ -55,3 +55,5 @@ test-results/
 server/data/*.tmp
 server/data/uploads/*
 !server/data/uploads/.gitkeep
+tmp/
+
