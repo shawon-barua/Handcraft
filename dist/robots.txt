@@ -1,0 +1,7 @@
+# Robots.txt for Falguni Handcraft (Bangladesh)
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://falgunishandcraft.com/sitemap.xml
