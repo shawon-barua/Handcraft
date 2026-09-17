@@ -495,12 +495,12 @@ Please let me know how we can proceed!`;
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <ShieldCheck size={15} color="#e26d21" />
                   <strong style={{ color: '#1c1917' }}>Quality:</strong>
-                  <span style={{ color: '#57534e' }}>100% Eco-Friendly Clay, Waterproof Polish</span>
+                  <span style={{ color: '#57534e' }}>{product.quality || (product.category === 'clay-jewellery' ? '100% Eco-Friendly Clay, Waterproof Polish' : '100% Artisan Handcrafted, Premium Polish')}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Clock size={15} color="#e26d21" />
                   <strong style={{ color: '#1c1917' }}>Crafting Time:</strong>
-                  <span style={{ color: '#57534e' }}>3-4 Days of meticulous artisan effort</span>
+                  <span style={{ color: '#57534e' }}>{product.craftingTime || '3-4 Days of meticulous artisan effort'}</span>
                 </div>
               </div>
 

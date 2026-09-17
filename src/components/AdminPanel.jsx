@@ -77,6 +77,8 @@ export default function AdminPanel({
     originalPrice: '',
     description: '',
     materials: '',
+    quality: '',
+    craftingTime: '',
     stock: 15,
     image1: '',
     image2: '',
@@ -543,6 +545,8 @@ export default function AdminPanel({
           originalPrice: '',
           description: '',
           materials: '',
+          quality: '',
+          craftingTime: '',
           stock: 15,
           image1: '',
           image2: '',
@@ -587,6 +591,8 @@ export default function AdminPanel({
       originalPrice: prod.originalPrice || '',
       description: prod.description || '',
       materials: prod.materials || '',
+      quality: prod.quality || '',
+      craftingTime: prod.craftingTime || '',
       stock: prod.stock !== undefined ? prod.stock : 10,
       image1: images[0] || '',
       image2: images[1] || '',
@@ -3076,14 +3082,37 @@ export default function AdminPanel({
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Handcrafted Materials & Specs</label>
+                  <label className="form-label">Handcrafted Materials</label>
                   <input
                     type="text"
-                    placeholder="e.g. River Terracotta Clay, Resham Silk Thread, Antique Brass"
+                    placeholder="e.g. Premium quality glass beads, Resham silk thread, Brass beads"
                     value={newProduct.materials}
                     onChange={e => setNewProduct({ ...newProduct, materials: e.target.value })}
                     className="form-input"
                   />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">Quality & Polish</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 100% Eco-Friendly Clay, Waterproof Polish"
+                      value={newProduct.quality}
+                      onChange={e => setNewProduct({ ...newProduct, quality: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Crafting Time</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 3-4 Days of meticulous artisan effort"
+                      value={newProduct.craftingTime}
+                      onChange={e => setNewProduct({ ...newProduct, craftingTime: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
                 </div>
 
                 {/* 3 Separate Product Pictures */}
@@ -3226,13 +3255,37 @@ export default function AdminPanel({
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Handcrafted Materials & Specs</label>
+                  <label className="form-label">Handcrafted Materials</label>
                   <input
                     type="text"
+                    placeholder="e.g. Premium quality glass beads, Resham silk thread, Brass beads"
                     value={editingProduct.materials}
                     onChange={e => setEditingProduct({ ...editingProduct, materials: e.target.value })}
                     className="form-input"
                   />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">Quality & Polish</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 100% Eco-Friendly Clay, Waterproof Polish"
+                      value={editingProduct.quality}
+                      onChange={e => setEditingProduct({ ...editingProduct, quality: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Crafting Time</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 3-4 Days of meticulous artisan effort"
+                      value={editingProduct.craftingTime}
+                      onChange={e => setEditingProduct({ ...editingProduct, craftingTime: e.target.value })}
+                      className="form-input"
+                    />
+                  </div>
                 </div>
 
                 {/* 3 Separate Product Pictures */}

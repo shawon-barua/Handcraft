@@ -95,7 +95,12 @@
         "/terracotta-choker-macro.jpg",
         "/terracotta-jhumkas-detail.jpg"
       ],
-      "image": "/terracotta-lotus-choker.jpg"
+      "image": "/terracotta-lotus-choker.jpg",
+      "quality": "100% Eco-Friendly Clay, Waterproof Polish",
+      "craftingTime": "3-4 Days of meticulous artisan effort",
+      "image1": "/terracotta-lotus-choker.jpg",
+      "image2": "/terracotta-choker-macro.jpg",
+      "image3": "/terracotta-jhumkas-detail.jpg"
     },
     {
       "id": "p-102",
@@ -114,7 +119,9 @@
         "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80"
       ],
-      "image": "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80",
+      "quality": "Anti-Tarnish Treated, Hypoallergenic Pure Brass",
+      "craftingTime": "2-3 Days of traditional metalwork"
     },
     {
       "id": "p-103",
@@ -133,7 +140,9 @@
         "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
         "/terracotta-jhumkas-detail.jpg"
       ],
-      "image": "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
+      "quality": "100% Natural River Clay, Skin-Friendly Earring Posts",
+      "craftingTime": "2 Days of artisan shaping & kiln firing"
     },
     {
       "id": "p-104",
@@ -152,7 +161,9 @@
         "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80"
       ],
-      "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?auto=format&fit=crop&w=800&q=80",
+      "quality": "Grade-A Natural Stones, High-Tensile Elastic Cord",
+      "craftingTime": "1-2 Days of custom artisan beadwork"
     },
     {
       "id": "p-105",
@@ -170,7 +181,9 @@
       "images": [
         "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80"
       ],
-      "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+      "quality": "Anti-Allergy Silver Alloy, Hand-Soldered Brass Bells",
+      "craftingTime": "2-3 Days of precision artisan filigree"
     },
     {
       "id": "p-106",
@@ -189,7 +202,9 @@
       "images": [
         "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80"
       ],
-      "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
+      "quality": "Child-Safe Non-Toxic, Smooth Rounded Edges",
+      "craftingTime": "1-2 Days of artisan crafting"
     },
     {
       "id": "p-107",
@@ -207,7 +222,9 @@
       "images": [
         "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80"
       ],
-      "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
+      "quality": "100% Pure Luminous Silk Thread, Embedded Zari",
+      "craftingTime": "2 Days of meticulous hand-wrapping"
     },
     {
       "id": "p-108",
@@ -225,7 +242,9 @@
       "images": [
         "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80"
       ],
-      "image": "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1598560917505-59a3ad559071?auto=format&fit=crop&w=800&q=80",
+      "quality": "Vegetable-Tanned Full Grain Leather, Rustproof Clasp",
+      "craftingTime": "2-3 Days of artisan hand-braiding"
     },
     {
       "id": "p-109",
@@ -245,7 +264,9 @@
         "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80",
         "/terracotta-lotus-choker.jpg"
       ],
-      "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80",
+      "quality": "Organic Festive Pigments, Skin-Safe Terracotta",
+      "craftingTime": "4-5 Days of bridal artisan effort"
     },
     {
       "id": "p-110",
@@ -263,7 +284,9 @@
       "images": [
         "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80"
       ],
-      "image": "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=800&q=80",
+      "quality": "Kiln-Fired River Clay, Waterproof Acrylic Glaze",
+      "craftingTime": "2-3 Days of fine brushwork & baking"
     },
     {
       "id": "p-111",
@@ -283,7 +306,9 @@
         "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
         "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80"
       ],
-      "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80"
+      "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+      "quality": "Precision Japanese Micro Glass Beads, Fade-Resistant",
+      "craftingTime": "3-4 Days of micro-bead loom weaving"
     }
   ],
   "orders": [],

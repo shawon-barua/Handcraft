@@ -607,7 +607,7 @@ app.get('/api/products/:id', (req, res) => {
 
 app.post('/api/products', requireAdmin, (req, res) => {
   const db = loadStore();
-  const { title, category, price, description, materials, image, images, image1, image2, image3, stock, originalPrice, badges } = req.body;
+  const { title, category, price, description, materials, quality, craftingTime, image, images, image1, image2, image3, stock, originalPrice, badges } = req.body;
 
   if (!title || !category || price === undefined) {
     return res.status(400).json({ error: 'Title, category, and price are required' });
@@ -635,6 +635,8 @@ app.post('/api/products', requireAdmin, (req, res) => {
     originalPrice: originalPrice ? Math.max(0, Number(originalPrice)) : Math.round(Number(price) * 1.25),
     description: description || 'Beautiful handcrafted artisan piece made with premium traditional materials.',
     materials: materials || 'Handcrafted Organic Materials',
+    quality: quality || '100% Artisan Handcrafted, Premium Quality',
+    craftingTime: craftingTime || '3-4 Days of meticulous artisan effort',
     badges: badges && badges.length ? badges : ['Handcrafted'],
     stock: stock !== undefined ? Math.max(0, Number(stock)) : 10,
     rating: 5.0,
