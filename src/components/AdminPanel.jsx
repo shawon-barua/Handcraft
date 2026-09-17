@@ -66,6 +66,8 @@ export default function AdminPanel({
   // Forms state
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', description: '', image: '', icon: 'Sparkles' });
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
 
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [newProduct, setNewProduct] = useState({
@@ -456,6 +458,62 @@ export default function AdminPanel({
     }
   };
 
+  // Open Edit Category Modal
+  const handleOpenEditCategory = (cat) => {
+    const catProds = (products || []).filter(p => p && (p.category === cat.slug || p.category === cat.id));
+    const prodWithUpload = catProds.find(p => 
+      (p.image && (p.image.startsWith('/uploads/') || p.image.startsWith('data:'))) ||
+      (Array.isArray(p.images) && p.images.some(img => img && (img.startsWith('/uploads/') || img.startsWith('data:'))))
+    );
+    const uploadedImg = prodWithUpload 
+      ? (prodWithUpload.image && (prodWithUpload.image.startsWith('/uploads/') || prodWithUpload.image.startsWith('data:'))
+          ? prodWithUpload.image
+          : prodWithUpload.images?.find(img => img && (img.startsWith('/uploads/') || img.startsWith('data:'))))
+      : null;
+    const latestProd = catProds.find(p => p.image || (Array.isArray(p.images) && p.images[0]));
+    const latestImg = latestProd ? (latestProd.image || latestProd.images[0]) : null;
+
+    setEditingCategory({
+      id: cat.id,
+      name: cat.name || '',
+      slug: cat.slug || cat.id,
+      description: cat.description || '',
+      image: cat.image || '',
+      icon: cat.icon || 'Sparkles',
+      suggestedProductImage: uploadedImg || latestImg
+    });
+    setShowEditCategoryModal(true);
+  };
+
+  // Handle Updating Category
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (!editingCategory || !editingCategory.name.trim()) return;
+
+    try {
+      const res = await authFetch(`/api/categories/${editingCategory.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editingCategory.name.trim(),
+          description: editingCategory.description || '',
+          image: editingCategory.image || '',
+          icon: editingCategory.icon || 'Sparkles'
+        })
+      });
+
+      if (res.ok) {
+        setShowEditCategoryModal(false);
+        setEditingCategory(null);
+        const cats = await authFetch('/api/categories').then(r => r.json());
+        setCategories(cats);
+        if (onRefreshData) onRefreshData();
+      }
+    } catch (err) {
+      console.error('Failed to update category:', err);
+    }
+  };
+
   // Handle Creating Product
   const handleCreateProduct = async (e) => {
     e.preventDefault();
@@ -597,6 +655,8 @@ export default function AdminPanel({
               setEditingProduct(prev => ({ ...prev, [fieldName]: data.url }));
             } else if (target === 'category') {
               setNewCategory(prev => ({ ...prev, [fieldName]: data.url }));
+            } else if (target === 'editCategory') {
+              setEditingCategory(prev => ({ ...prev, [fieldName]: data.url }));
             }
           } else {
             alert('Upload failed: ' + (data.error || 'Unknown error'));
@@ -1890,14 +1950,24 @@ export default function AdminPanel({
                       <span style={{ fontSize: '0.75rem', color: '#c0520d', fontFamily: 'monospace', fontWeight: 600 }}>
                         slug: {cat.slug}
                       </span>
-                      <button
-                        onClick={() => handleDeleteCategory(cat.id)}
-                        className="btn btn-secondary btn-sm"
-                        style={{ color: '#dc2626', borderColor: '#fecaca' }}
-                        title="Delete Category"
-                      >
-                        <Trash2 size={13} /> Delete
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          onClick={() => handleOpenEditCategory(cat)}
+                          className="btn btn-secondary btn-sm"
+                          style={{ color: '#0284c7', borderColor: '#bae6fd', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                          title="Edit Category & Cover Picture"
+                        >
+                          <Edit3 size={13} /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id)}
+                          className="btn btn-secondary btn-sm"
+                          style={{ color: '#dc2626', borderColor: '#fecaca' }}
+                          title="Delete Category"
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2825,6 +2895,109 @@ export default function AdminPanel({
                   </button>
                   <button type="submit" className="btn btn-primary">
                     Create Category
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* EDIT CATEGORY MODAL                                           */}
+        {/* ------------------------------------------------------------- */}
+        {showEditCategoryModal && editingCategory && (
+          <div className="modal-overlay" onClick={() => setShowEditCategoryModal(false)}>
+            <div className="modal-content glass-panel" onClick={e => e.stopPropagation()} style={{ padding: '1.75rem', maxWidth: '580px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <h2 style={{ fontSize: '1.3rem', color: '#1c1917', fontWeight: 700, margin: 0 }}>
+                  Edit Category & Cover Picture
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowEditCategoryModal(false)}
+                  style={{ background: 'none', border: 'none', color: '#78716c', cursor: 'pointer', padding: '4px' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateCategory}>
+                <div className="form-group">
+                  <label className="form-label">Category Name *</label>
+                  <input
+                    type="text"
+                    value={editingCategory.name}
+                    onChange={e => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                    className="form-input"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Description</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Brief description of the handcrafted technique or materials..."
+                    value={editingCategory.description}
+                    onChange={e => setEditingCategory({ ...editingCategory, description: e.target.value })}
+                    className="form-textarea"
+                  />
+                </div>
+
+                <ImageUploadSlot
+                  label="Category Cover Picture"
+                  helperText="Upload a new photo from your computer/phone, paste a URL, or sync with products below"
+                  value={editingCategory.image}
+                  onChange={(val) => setEditingCategory({ ...editingCategory, image: val })}
+                  onUpload={(file) => handleUploadImageFile(file, 'editCategory', 'image')}
+                  isUploading={uploadingKey === 'editCategory-image'}
+                  required={false}
+                />
+
+                {/* Quick button to adopt latest uploaded product picture */}
+                {editingCategory.suggestedProductImage && editingCategory.suggestedProductImage !== editingCategory.image && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.65rem 0.85rem',
+                    background: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    borderRadius: 'var(--radius-sm)',
+                    marginBottom: '1rem',
+                    gap: '0.75rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      <img
+                        src={editingCategory.suggestedProductImage}
+                        alt="Product preview"
+                        style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }}
+                      />
+                      <span style={{ fontSize: '0.78rem', color: '#1d4ed8' }}>
+                        A new uploaded product photo is available in this category.
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingCategory(prev => ({ ...prev, image: prev.suggestedProductImage }))}
+                      className="btn btn-secondary btn-sm"
+                      style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', color: '#1d4ed8', borderColor: '#93c5fd', whiteSpace: 'nowrap' }}
+                    >
+                      Use Product Photo
+                    </button>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem', marginTop: '1.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditCategoryModal(false)}
+                    className="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    Save Category Changes
                   </button>
                 </div>
               </form>

@@ -380,6 +380,7 @@ export default function App() {
           {/* Hero Banner with Categories Showcase */}
           <HeroBanner
             categories={categories}
+            products={products}
             onSelectCategory={(catSlug) => {
               setActiveCategory(catSlug);
               scrollToProducts();

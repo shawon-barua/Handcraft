@@ -461,8 +461,42 @@ app.post('/api/settings', requireAdmin, (req, res) => {
 app.get('/api/categories', (req, res) => {
   const db = loadStore();
   const categoriesWithCounts = (db.categories || []).map(cat => {
-    const count = (db.products || []).filter(p => p.category === cat.slug || p.category === cat.id).length;
-    return { ...cat, productCount: count };
+    const catProducts = (db.products || []).filter(p => p && (p.category === cat.slug || p.category === cat.id));
+    const count = catProducts.length;
+
+    // Find if any product has an uploaded image (/uploads/ or base64 data)
+    const productWithUpload = catProducts.find(p => 
+      (p.image && (p.image.startsWith('/uploads/') || p.image.startsWith('data:'))) ||
+      (Array.isArray(p.images) && p.images.some(img => img && (img.startsWith('/uploads/') || img.startsWith('data:'))))
+    );
+
+    let uploadedProductImg = null;
+    if (productWithUpload) {
+      if (productWithUpload.image && (productWithUpload.image.startsWith('/uploads/') || productWithUpload.image.startsWith('data:'))) {
+        uploadedProductImg = productWithUpload.image;
+      } else {
+        uploadedProductImg = productWithUpload.images?.find(img => img && (img.startsWith('/uploads/') || img.startsWith('data:')));
+      }
+    }
+
+    const latestProd = catProducts.find(p => p.image || (Array.isArray(p.images) && p.images[0]));
+    const latestProdImg = latestProd ? (latestProd.image || latestProd.images[0]) : null;
+
+    let resolvedImage = cat.image;
+    if (cat.image && (cat.image.startsWith('/uploads/') || cat.image.startsWith('data:'))) {
+      resolvedImage = cat.image;
+    } else if (uploadedProductImg) {
+      resolvedImage = uploadedProductImg;
+    } else if (!resolvedImage || resolvedImage.includes('unsplash.com')) {
+      resolvedImage = latestProdImg || resolvedImage;
+    }
+
+    return { 
+      ...cat, 
+      image: resolvedImage || cat.image,
+      productCount: count,
+      latestProductImage: latestProdImg
+    };
   });
   res.json(categoriesWithCounts);
 });

@@ -6,7 +6,60 @@
 import React from 'react';
 import { Sparkles, MessageSquare, Box, ArrowRight } from 'lucide-react';
 
-export default function HeroBanner({ categories, onSelectCategory, onScrollToProducts, featuredProduct, onSelectProduct, settings }) {
+export const getCategoryDisplayImage = (cat, prods = []) => {
+  if (!cat) return '/terracotta-lotus-choker.jpg';
+
+  // 1. If category itself has an explicitly uploaded image (/uploads/... or base64 data:)
+  if (cat.image && (cat.image.startsWith('/uploads/') || cat.image.startsWith('data:'))) {
+    return cat.image;
+  }
+
+  // 2. Filter products belonging to this category
+  const catProducts = (prods || []).filter(
+    p => p && (p.category === cat.slug || p.category === cat.id)
+  );
+
+  // 3. Find latest product with an uploaded image (/uploads/ or base64 data)
+  const productWithUpload = catProducts.find(p => 
+    (p.image && (p.image.startsWith('/uploads/') || p.image.startsWith('data:'))) ||
+    (Array.isArray(p.images) && p.images.some(img => img && (img.startsWith('/uploads/') || img.startsWith('data:'))))
+  );
+
+  if (productWithUpload) {
+    if (productWithUpload.image && (productWithUpload.image.startsWith('/uploads/') || productWithUpload.image.startsWith('data:'))) {
+      return productWithUpload.image;
+    }
+    const up = productWithUpload.images?.find(img => img && (img.startsWith('/uploads/') || img.startsWith('data:')));
+    if (up) return up;
+  }
+
+  // 4. If cat.latestProductImage is provided by the server API and is not an unsplash default
+  if (cat.latestProductImage && !cat.latestProductImage.includes('unsplash.com')) {
+    return cat.latestProductImage;
+  }
+
+  // 5. If category has products with non-unsplash local images (e.g. /terracotta-lotus-choker.jpg)
+  const productWithLocal = catProducts.find(p => p.image && !p.image.includes('unsplash.com'));
+  if (productWithLocal) {
+    return productWithLocal.image;
+  }
+
+  // 6. If category image itself is non-unsplash
+  if (cat.image && !cat.image.includes('unsplash.com')) {
+    return cat.image;
+  }
+
+  // 7. Latest product's image if available
+  const anyProduct = catProducts.find(p => p.image || (Array.isArray(p.images) && p.images[0]));
+  if (anyProduct) {
+    return anyProduct.image || anyProduct.images[0];
+  }
+
+  // 8. Fallback to cat.image or default placeholder
+  return cat.image || '/terracotta-lotus-choker.jpg';
+};
+
+export default function HeroBanner({ categories, products = [], onSelectCategory, onScrollToProducts, featuredProduct, onSelectProduct, settings }) {
   const cleanWaNumber = (num) => (num ? String(num).replace(/[^0-9]/g, '').replace(/^0/, '880') : '8801855636389');
   
   return (
@@ -211,58 +264,68 @@ export default function HeroBanner({ categories, onSelectCategory, onScrollToPro
           </div>
 
           <div className="category-showcase-grid">
-            {categories.map(cat => (
-              <div
-                key={cat.id}
-                onClick={() => onSelectCategory(cat.slug || cat.id)}
-                style={{
-                  background: '#ffffff',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid #e7e2db',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  transition: 'var(--transition)',
-                  position: 'relative',
-                  padding: '0.5rem',
-                  textAlign: 'center',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                  e.currentTarget.style.borderColor = '#e26d21';
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(226, 109, 33, 0.12)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = '#e7e2db';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.03)';
-                }}
-              >
-                <div 
-                  className="category-card-img-wrap"
+            {categories.map(cat => {
+              const displayImage = getCategoryDisplayImage(cat, products);
+              return (
+                <div
+                  key={cat.id}
+                  onClick={() => onSelectCategory(cat.slug || cat.id)}
                   style={{
-                    width: '100%',
-                    height: '110px',
-                    borderRadius: 'calc(var(--radius-md) - 4px)',
+                    background: '#ffffff',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid #e7e2db',
                     overflow: 'hidden',
-                    marginBottom: '0.5rem'
+                    cursor: 'pointer',
+                    transition: 'var(--transition)',
+                    position: 'relative',
+                    padding: '0.5rem',
+                    textAlign: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.borderColor = '#e26d21';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(226, 109, 33, 0.12)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = '#e7e2db';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.03)';
                   }}
                 >
-                  <img
-                    src={cat.image}
-                    alt={`${cat.name} - Handcrafted Jewelry Bangladesh`}
-                    loading="lazy"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
+                  <div 
+                    className="category-card-img-wrap"
+                    style={{
+                      width: '100%',
+                      height: '110px',
+                      borderRadius: 'calc(var(--radius-md) - 4px)',
+                      overflow: 'hidden',
+                      marginBottom: '0.5rem'
+                    }}
+                  >
+                    <img
+                      src={displayImage}
+                      alt={`${cat.name} - Handcrafted Jewelry Bangladesh`}
+                      loading="lazy"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        if (e.currentTarget.src !== cat.image && cat.image) {
+                          e.currentTarget.src = cat.image;
+                        } else {
+                          e.currentTarget.src = '/terracotta-lotus-choker.jpg';
+                        }
+                      }}
+                    />
+                  </div>
+                  <h3 style={{ fontSize: '0.88rem', color: '#1c1917', marginBottom: '0.15rem', fontWeight: 600 }}>
+                    {cat.name}
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', color: '#e26d21', fontWeight: 600 }}>
+                    {cat.productCount ?? 0} items
+                  </span>
                 </div>
-                <h3 style={{ fontSize: '0.88rem', color: '#1c1917', marginBottom: '0.15rem', fontWeight: 600 }}>
-                  {cat.name}
-                </h3>
-                <span style={{ fontSize: '0.72rem', color: '#e26d21', fontWeight: 600 }}>
-                  {cat.productCount ?? 0} items
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
