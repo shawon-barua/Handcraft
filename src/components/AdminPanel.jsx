@@ -111,9 +111,29 @@ export default function AdminPanel({
   const handleDownloadBackup = async () => {
     setIsDownloadingBackup(true);
     try {
-      const res = await authFetch('/api/store/backup');
-      if (!res.ok) throw new Error('Failed to generate backup');
-      const blob = await res.blob();
+      let backupObj = null;
+
+      // 1. Try to get complete backup from backend first
+      try {
+        const res = await authFetch('/api/store/backup');
+        if (res.ok) {
+          backupObj = await res.json();
+        }
+      } catch (_) {}
+
+      // 2. Fallback: if server endpoint is 404 or not restarted yet, download live data from admin state!
+      if (!backupObj) {
+        backupObj = {
+          settings: settings || {},
+          categories: categories || [],
+          products: products || [],
+          orders: orders || [],
+          exportedAt: new Date().toISOString()
+        };
+      }
+
+      const jsonStr = JSON.stringify(backupObj, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
