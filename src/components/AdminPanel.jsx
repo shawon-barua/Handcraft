@@ -3,12 +3,12 @@
  * All rights reserved.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, ShoppingBag, FolderTree, Package, Settings, 
   DollarSign, TrendingUp, Clock, CheckCircle2, MessageSquare, 
   Edit3, Trash2, Plus, Save, Search, Filter, ExternalLink, Sparkles, RefreshCw, AlertCircle,
-  Upload, Image as ImageIcon, Check, X, ArrowRight, ArrowDown, XCircle, ChevronRight, Phone, MapPin, Eye, EyeOff,
+  Upload, Download, Image as ImageIcon, Check, X, ArrowRight, ArrowDown, XCircle, ChevronRight, Phone, MapPin, Eye, EyeOff,
   ShieldCheck, Lock, Key, User, Users, ShieldAlert, UserCheck, History
 } from 'lucide-react';
 
@@ -92,6 +92,12 @@ export default function AdminPanel({
 
   const [settingsSaved, setSettingsSaved] = useState(false);
 
+  // Database Backup & Restore state
+  const backupFileInputRef = useRef(null);
+  const [isDownloadingBackup, setIsDownloadingBackup] = useState(false);
+  const [isRestoringBackup, setIsRestoringBackup] = useState(false);
+  const [restoreStatus, setRestoreStatus] = useState('');
+
   // Authenticated fetch helper that automatically attaches JWT admin token
   const authFetch = (url, options = {}) => {
     const token = localStorage.getItem('falguni_admin_token');
@@ -100,6 +106,64 @@ export default function AdminPanel({
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
     return fetch(url, { ...options, headers, cache: 'no-store' });
+  };
+
+  const handleDownloadBackup = async () => {
+    setIsDownloadingBackup(true);
+    try {
+      const res = await authFetch('/api/store/backup');
+      if (!res.ok) throw new Error('Failed to generate backup');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `falgunishandcraft-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      alert('Failed to download backup: ' + err.message);
+    } finally {
+      setIsDownloadingBackup(false);
+    }
+  };
+
+  const handleFileRestore = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!window.confirm(`⚠️ Are you sure you want to restore the store database from "${file.name}"? This will overwrite the current products and categories.`)) {
+      if (backupFileInputRef.current) backupFileInputRef.current.value = '';
+      return;
+    }
+
+    setIsRestoringBackup(true);
+    setRestoreStatus('Reading file and restoring...');
+
+    try {
+      const text = await file.text();
+      const parsedData = JSON.parse(text);
+
+      const res = await authFetch('/api/store/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: parsedData })
+      });
+
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData.error || 'Restore failed');
+
+      setRestoreStatus(resData.message || 'Database restored successfully!');
+      fetchData();
+      if (onRefreshData) onRefreshData();
+    } catch (err) {
+      setRestoreStatus('Error: ' + err.message);
+    } finally {
+      setIsRestoringBackup(false);
+      if (backupFileInputRef.current) backupFileInputRef.current.value = '';
+      setTimeout(() => setRestoreStatus(''), 6000);
+    }
   };
 
   // Fetch admin data
@@ -2346,6 +2410,100 @@ export default function AdminPanel({
                   >
                     <Key size={16} /> Change Password
                   </button>
+                </div>
+              </div>
+
+              {/* Database Backup & Instant Restore Section */}
+              <div style={{
+                marginTop: '2.5rem',
+                paddingTop: '2rem',
+                borderTop: '2px dashed #e7e2db'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#2563eb'
+                  }}>
+                    <History size={18} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', color: '#1c1917', fontWeight: 700 }}>
+                      Database Backup & Instant Restore
+                    </h3>
+                    <p style={{ fontSize: '0.82rem', color: '#78716c' }}>
+                      Download a 1-click JSON backup of all products, categories, and orders to your computer, or restore anytime.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{
+                  background: '#faf8f5',
+                  border: '1px solid #e7e2db',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '1.5rem',
+                  marginTop: '1rem',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#1c1917', fontSize: '0.92rem' }}>
+                        Export Catalog & Store Data
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#78716c', marginTop: '0.15rem' }}>
+                        Download complete store database as a .json backup file.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleDownloadBackup}
+                      disabled={isDownloadingBackup}
+                      className="btn btn-primary"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.88rem' }}
+                    >
+                      <Download size={16} /> {isDownloadingBackup ? 'Preparing...' : 'Download Backup'}
+                    </button>
+                  </div>
+
+                  {currentUser?.role === 'superadmin' && (
+                    <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #e7e2db' }}>
+                      <div style={{ fontWeight: 700, color: '#1c1917', fontSize: '0.92rem', marginBottom: '0.3rem' }}>
+                        Restore Database from Backup File
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#78716c', marginBottom: '0.75rem' }}>
+                        Select any previous JSON backup to instantly restore all products and categories.
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+                        <input
+                          type="file"
+                          accept=".json,application/json"
+                          ref={backupFileInputRef}
+                          onChange={handleFileRestore}
+                          style={{ display: 'none' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => backupFileInputRef.current?.click()}
+                          disabled={isRestoringBackup}
+                          className="btn btn-secondary"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.88rem', background: '#fff' }}
+                        >
+                          <Upload size={16} /> {isRestoringBackup ? 'Restoring...' : 'Choose Backup JSON & Restore'}
+                        </button>
+                        {restoreStatus && (
+                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: restoreStatus.includes('Error') ? '#dc2626' : '#16a34a' }}>
+                            {restoreStatus}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

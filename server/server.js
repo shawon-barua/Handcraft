@@ -505,6 +505,50 @@ app.post('/api/settings', requireAdmin, (req, res) => {
 });
 
 // -------------------------------------------------------------
+// DATABASE BACKUP & RESTORE (Super Admin Protected)
+// -------------------------------------------------------------
+app.get('/api/store/backup', requireAdmin, (req, res) => {
+  try {
+    const db = loadStore();
+    res.setHeader('Content-Disposition', `attachment; filename="falgunishandcraft-backup-${new Date().toISOString().slice(0, 10)}.json"`);
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(db, null, 2));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to generate store backup' });
+  }
+});
+
+app.post('/api/store/restore', requireSuperAdmin, (req, res) => {
+  try {
+    const { data } = req.body || {};
+    if (!data || typeof data !== 'object') {
+      return res.status(400).json({ error: 'Invalid backup file format' });
+    }
+    if (!Array.isArray(data.products) || !Array.isArray(data.categories)) {
+      return res.status(400).json({ error: 'Backup file must contain valid products and categories arrays' });
+    }
+
+    const currentDb = loadStore();
+    const restoredData = {
+      settings: data.settings || currentDb.settings || {},
+      categories: data.categories,
+      products: data.products,
+      orders: Array.isArray(data.orders) ? data.orders : (currentDb.orders || []),
+      admins: (Array.isArray(data.admins) && data.admins.length > 0) ? data.admins : currentDb.admins
+    };
+
+    saveStore(restoredData);
+    res.json({
+      success: true,
+      message: `Database successfully restored! Loaded ${restoredData.products.length} products and ${restoredData.categories.length} categories.`
+    });
+  } catch (err) {
+    console.error('Database restore error:', err);
+    res.status(500).json({ error: 'Failed to restore database from backup file' });
+  }
+});
+
+// -------------------------------------------------------------
 // CATEGORIES
 // -------------------------------------------------------------
 app.get('/api/categories', (req, res) => {
