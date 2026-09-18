@@ -99,7 +99,7 @@ export default function AdminPanel({
       ...(options.headers || {}),
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
-    return fetch(url, { ...options, headers });
+    return fetch(url, { ...options, headers, cache: 'no-store' });
   };
 
   // Fetch admin data

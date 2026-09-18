@@ -97,10 +97,11 @@ export default function App() {
   // Fetch initial storefront data
   const loadData = async () => {
     try {
+      const ts = Date.now();
       const [catsRes, prodsRes, settingsRes] = await Promise.all([
-        fetch('/api/categories').then(r => (r.ok ? r.json() : null)).catch(() => null),
-        fetch('/api/products').then(r => (r.ok ? r.json() : null)).catch(() => null),
-        fetch('/api/settings').then(r => (r.ok ? r.json() : null)).catch(() => null)
+        fetch(`/api/categories?_t=${ts}`, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`/api/products?_t=${ts}`, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`/api/settings?_t=${ts}`, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null)
       ]);
 
       if (Array.isArray(catsRes) && catsRes.length > 0) setCategories(catsRes);

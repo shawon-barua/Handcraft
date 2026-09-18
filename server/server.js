@@ -33,6 +33,17 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Anti-caching headers for dynamic API endpoints (instructs LiteSpeed, proxies, & browsers never to cache)
+app.use('/api', (req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Surrogate-Control': 'no-store'
+  });
+  next();
+});
+
 // Rate Limiters
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -54,7 +65,12 @@ const orderLimiter = rateLimit({
 // Paths
 const DATA_DIR = path.join(__dirname, 'data');
 const STORE_FILE = path.join(DATA_DIR, 'store.json');
+const BACKUP_FILE = path.join(DATA_DIR, 'store.backup.json');
 const INITIAL_FILE = path.join(DATA_DIR, 'initialData.json');
+
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
 
 const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
@@ -63,17 +79,43 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 
 // -------------------------------------------------------------
-// IN-MEMORY STORE CACHING & ATOMIC PERSISTENCE
+// IN-MEMORY STORE CACHING & ROBUST DISK PERSISTENCE
 // -------------------------------------------------------------
 let memoryStore = null;
 
 function saveStoreSync(data) {
+  const content = JSON.stringify(data, null, 2);
+  let saved = false;
+
+  // 1. Direct write (proven reliable on cPanel/CloudLinux filesystems, identical to image uploads)
   try {
-    const tmpFile = `${STORE_FILE}.tmp`;
-    fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
-    fs.renameSync(tmpFile, STORE_FILE); // Atomic write: prevents 0-byte file on crash
-  } catch (err) {
-    console.error('Error synchronously saving store file:', err);
+    fs.writeFileSync(STORE_FILE, content, 'utf-8');
+    saved = true;
+  } catch (directErr) {
+    console.warn('Direct write to store.json failed, attempting tmp rename fallback:', directErr.message);
+  }
+
+  // 2. Fallback via tmp rename if direct write encountered a filesystem lock
+  if (!saved) {
+    try {
+      const tmpFile = `${STORE_FILE}.tmp`;
+      fs.writeFileSync(tmpFile, content, 'utf-8');
+      fs.renameSync(tmpFile, STORE_FILE);
+      saved = true;
+    } catch (renameErr) {
+      console.error('CRITICAL: Fallback tmp rename also failed:', renameErr.message);
+    }
+  }
+
+  // 3. Persistent local backup (never tracked in Git)
+  try {
+    fs.writeFileSync(BACKUP_FILE, content, 'utf-8');
+  } catch (backupErr) {
+    console.warn('Warning: Could not write store.backup.json:', backupErr.message);
+  }
+
+  if (!saved) {
+    throw new Error('CRITICAL: Failed to write store data to disk on server');
   }
 }
 
@@ -82,11 +124,18 @@ function loadStore() {
     let storeData;
     // Empty/corrupted file check (< 5 bytes means corrupted or blank file)
     if (!fs.existsSync(STORE_FILE) || fs.statSync(STORE_FILE).size < 5) {
-      const initialData = fs.readFileSync(INITIAL_FILE, 'utf-8');
-      const tmpFile = `${STORE_FILE}.tmp`;
-      fs.writeFileSync(tmpFile, initialData, 'utf-8');
-      fs.renameSync(tmpFile, STORE_FILE);
-      storeData = JSON.parse(initialData);
+      // Check if persistent backup exists first
+      if (fs.existsSync(BACKUP_FILE) && fs.statSync(BACKUP_FILE).size >= 5) {
+        console.log('Restoring store from persistent backup store.backup.json...');
+        const backupData = fs.readFileSync(BACKUP_FILE, 'utf-8');
+        fs.writeFileSync(STORE_FILE, backupData, 'utf-8');
+        storeData = JSON.parse(backupData);
+      } else {
+        console.log('Initializing store from initialData.json...');
+        const initialData = fs.readFileSync(INITIAL_FILE, 'utf-8');
+        fs.writeFileSync(STORE_FILE, initialData, 'utf-8');
+        storeData = JSON.parse(initialData);
+      }
     } else {
       const data = fs.readFileSync(STORE_FILE, 'utf-8');
       storeData = JSON.parse(data);

@@ -53,6 +53,7 @@ test-results/
 
 # Dynamic data & upload caches
 server/data/*.tmp
+server/data/store.backup.json
 server/data/uploads/*
 !server/data/uploads/.gitkeep
 tmp/
