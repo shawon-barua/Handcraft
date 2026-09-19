@@ -399,6 +399,34 @@ a {
   box-shadow: 0 8px 25px rgba(37, 211, 102, 0.48);
 }
 
+/* Floating Facebook Follow Quick Action */
+.floating-facebook {
+  position: fixed;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  left: 1.25rem;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: #1877f2;
+  color: #ffffff;
+  padding: 0.75rem 1.2rem;
+  border-radius: var(--radius-full);
+  box-shadow: 0 6px 20px rgba(24, 119, 242, 0.35);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  text-decoration: none;
+}
+.floating-facebook:hover, .floating-facebook:active {
+  transform: scale(1.04) translateY(-2px);
+  background: #166fe5;
+  box-shadow: 0 8px 25px rgba(24, 119, 242, 0.48);
+  color: #ffffff;
+}
+
 /* Product Responsive Grids */
 .products-grid-container {
   display: grid;
@@ -588,7 +616,7 @@ a {
     max-width: 100% !important;
   }
 
-  /* Floating WhatsApp on mobile */
+  /* Floating WhatsApp & Facebook on mobile */
   .floating-whatsapp {
     padding: 0.65rem 1rem;
     font-size: 0.82rem;
@@ -596,6 +624,16 @@ a {
     right: 1rem;
   }
   .floating-whatsapp-text {
+    display: none;
+  }
+
+  .floating-facebook {
+    padding: 0.65rem 1rem;
+    font-size: 0.82rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    left: 1rem;
+  }
+  .floating-facebook-text {
     display: none;
   }
 }

@@ -26,6 +26,7 @@ export default function App() {
     storeName: 'Falguni Handcraft',
     logo: '/logo.png',
     whatsappNumber: '8801855636389',
+    facebookUrl: 'https://www.facebook.com/falgunisdesign',
     email: 'shawon.cse.ku@gmail.com',
     currency: '৳',
     announcement: '✨ Exquisitely handcrafted: Discover customized Haldi sets, stylish bracelets, and anklets! Contact us via WhatsApp to order.'
@@ -602,6 +603,21 @@ export default function App() {
         </main>
       )}
 
+      {/* Floating Facebook Follow Button (Bottom Left) */}
+      <a
+        href={settings?.facebookUrl || 'https://www.facebook.com/falgunisdesign'}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="floating-facebook"
+        title="Follow us on Facebook"
+        aria-label="Follow us on Facebook"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+        <span className="floating-facebook-text">Follow Page</span>
+      </a>
+
       {/* Floating WhatsApp Button (Bottom Right) */}
       <a
         href={`https://wa.me/${cleanWaNumber(settings?.whatsappNumber)}?text=${encodeURIComponent(
@@ -666,8 +682,45 @@ export default function App() {
               <div style={{ fontSize: '0.85rem', color: '#fed7aa', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
                 <Phone size={14} color="#25d366" /> WhatsApp: +{cleanWaNumber(settings?.whatsappNumber)}
               </div>
-              <div style={{ fontSize: '0.82rem', color: '#d6d3d1', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <div style={{ fontSize: '0.82rem', color: '#d6d3d1', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.9rem' }}>
                 <MapPin size={14} color="#e26d21" /> Chittagong , Bangladesh. Delivery all 64 districts
+              </div>
+              <div>
+                <a
+                  href={settings?.facebookUrl || 'https://www.facebook.com/falgunisdesign'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.55rem',
+                    background: '#1877F2',
+                    color: '#ffffff',
+                    padding: '0.52rem 1.05rem',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    boxShadow: '0 4px 12px rgba(24, 119, 242, 0.35)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#166fe5';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 18px rgba(24, 119, 242, 0.5)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = '#1877F2';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(24, 119, 242, 0.35)';
+                  }}
+                  title="Follow Falguni Handcraft on Facebook"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  <span>Follow on Facebook</span>
+                </a>
               </div>
             </div>
 

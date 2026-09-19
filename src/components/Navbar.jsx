@@ -127,7 +127,20 @@ export default function Navbar({
           <Sparkles size={13} color="var(--primary-light)" />
           <span style={{ fontWeight: 400 }}>{settings?.announcement || '✨ Authentic Handcrafted Artisanal Heritage — Direct WhatsApp negotiation available!'}</span>
         </div>
-        <div className="top-announcement-phone" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', fontSize: '0.8rem' }}>
+        <div className="top-announcement-phone" style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', fontSize: '0.8rem' }}>
+          <a 
+            href={settings?.facebookUrl || 'https://www.facebook.com/falgunisdesign'}
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: '#93c5fd', fontWeight: 600, textDecoration: 'none' }}
+            title="Follow Falguni Handcraft on Facebook"
+          >
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            Follow on Facebook
+          </a>
+          <span style={{ opacity: 0.35 }}>|</span>
           <a 
             href={`https://wa.me/${cleanWaNumber(settings?.whatsappNumber)}`}
             target="_blank" 
@@ -409,6 +422,33 @@ export default function Navbar({
 
           {/* 3. Action Icons & Admin Toggle (Right on Desktop, Top-Right on Mobile) */}
           <div className="navbar-actions">
+            {/* Facebook Follow Quick Button */}
+            <a
+              href={settings?.facebookUrl || 'https://www.facebook.com/falgunisdesign'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-secondary btn-sm navbar-action-btn"
+              style={{
+                position: 'relative',
+                borderRadius: 'var(--radius-full)',
+                padding: '0.5rem 0.75rem',
+                minHeight: '38px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                color: '#1877F2',
+                borderColor: '#e2e8f0',
+                background: '#ffffff',
+                textDecoration: 'none'
+              }}
+              title="Follow our Facebook Page"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="#1877F2">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              <span className="navbar-btn-text" style={{ color: '#1877F2', fontWeight: 600, fontSize: '0.8rem' }}>Follow</span>
+            </a>
+
             {/* Wishlist */}
             <button
               onClick={onToggleWishlist}
