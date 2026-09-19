@@ -718,49 +718,89 @@ export default function AdminPanel({
     }
   };
 
-  // Handle direct image file upload to server
+  // Helper to automatically compress images client-side before upload
+  const compressImage = (file, maxDim = 1200, quality = 0.84) => {
+    return new Promise((resolve, reject) => {
+      if (!file.type || !file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ base64: e.target.result, filename: file.name });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        const safeFileName = (file.name || 'image').replace(/\.[^/.]+$/, '') + '.jpg';
+        resolve({ base64: compressedDataUrl, filename: safeFileName });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ base64: e.target.result, filename: file.name });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      };
+      img.src = objectUrl;
+    });
+  };
+
+  // Handle direct image file upload to server with auto-compression
   const handleUploadImageFile = async (file, target, fieldName) => {
     if (!file) return;
     const key = `${target}-${fieldName}`;
     setUploadingKey(key);
 
     try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const base64Data = event.target.result;
-          const res = await authFetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              image: base64Data,
-              filename: file.name
-            })
-          });
-          const data = await res.json();
-          if (data.url) {
-            if (target === 'new') {
-              setNewProduct(prev => ({ ...prev, [fieldName]: data.url }));
-            } else if (target === 'edit') {
-              setEditingProduct(prev => ({ ...prev, [fieldName]: data.url }));
-            } else if (target === 'category') {
-              setNewCategory(prev => ({ ...prev, [fieldName]: data.url }));
-            } else if (target === 'editCategory') {
-              setEditingCategory(prev => ({ ...prev, [fieldName]: data.url }));
-            }
-          } else {
-            alert('Upload failed: ' + (data.error || 'Unknown error'));
-          }
-        } catch (err) {
-          console.error('Error uploading file:', err);
-          alert('Upload failed: ' + err.message);
-        } finally {
-          setUploadingKey(null);
+      const { base64, filename } = await compressImage(file, 1200, 0.84);
+      const res = await authFetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: base64,
+          filename: filename
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        if (target === 'new') {
+          setNewProduct(prev => ({ ...prev, [fieldName]: data.url }));
+        } else if (target === 'edit') {
+          setEditingProduct(prev => ({ ...prev, [fieldName]: data.url }));
+        } else if (target === 'category') {
+          setNewCategory(prev => ({ ...prev, [fieldName]: data.url }));
+        } else if (target === 'editCategory') {
+          setEditingCategory(prev => ({ ...prev, [fieldName]: data.url }));
         }
-      };
-      reader.readAsDataURL(file);
+      } else {
+        alert('Upload failed: ' + (data.error || 'Unknown error'));
+      }
     } catch (err) {
-      console.error('FileReader error:', err);
+      console.error('Error uploading file:', err);
+      alert('Upload failed: ' + err.message);
+    } finally {
       setUploadingKey(null);
     }
   };
