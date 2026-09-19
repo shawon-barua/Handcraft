@@ -39,7 +39,7 @@
       "name": "Haldi & wedding",
       "slug": "haldi-and-wedding",
       "description": "Auspicious bridal Haldi flower & terracotta jewelry sets, celebratory Gaye Holud adornments, and wedding designs.",
-      "image": "/haldi-wedding-jewellery.jpg",
+      "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=600&q=80",
       "icon": "Sparkles"
     },
     {
@@ -117,7 +117,7 @@
       "rating": 4.88,
       "images": [
         "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80",
-        "/brass-kada-macro.jpg"
+        "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80"
       ],
       "image": "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&w=800&q=80",
       "quality": "Anti-Tarnish Treated, Hypoallergenic Pure Brass",
@@ -261,10 +261,10 @@
       "stock": 8,
       "rating": 4.98,
       "images": [
-        "/haldi-wedding-jewellery.jpg",
+        "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80",
         "/terracotta-lotus-choker.jpg"
       ],
-      "image": "/haldi-wedding-jewellery.jpg",
+      "image": "https://images.unsplash.com/photo-1611591475852-5a24ec28203c?auto=format&fit=crop&w=800&q=80",
       "quality": "Organic Festive Pigments, Skin-Safe Terracotta",
       "craftingTime": "4-5 Days of bridal artisan effort"
     },
